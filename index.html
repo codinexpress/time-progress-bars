@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Time Progress Bars</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .progress-container {
+            margin-bottom: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 30px;
+            transition: width 0.1s linear;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            background-color: #e0e0e0;
+        }
+        .color-picker-container {
+            margin-bottom: 10px;
+        }
+        input[type="color"] {
+            width: 100px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Time Progress Bars</h1>
+    
+    <div class="color-picker-container">
+        <label for="colorPicker">Choose Progress Bar Color: </label>
+        <input type="color" id="colorPicker" value="#4CAF50">
+    </div>
+
+    <div id="progressBarsContainer"></div>
+
+    <script>
+        // Time scales with their total units
+        const timeScales = [
+            { name: 'Millisecond', total: 1000 },
+            { name: 'Second', total: 60 },
+            { name: 'Minute', total: 60 },
+            { name: 'Hour', total: 24 },
+            { name: 'Day', total: 365.25 }, // Average days in a year
+            { name: 'Week', total: 52 },
+            { name: 'Month', total: 12 },
+            { name: 'Year', total: 10 }, // Decade
+            { name: 'Decade', total: 10 }, // Century
+            { name: 'Century', total: 10 }, // Millennium
+        ];
+
+        // Function to get current value and percentage for different time scales
+        function getTimeProgress(scale) {
+            const now = new Date();
+            switch(scale) {
+                case 'Millisecond':
+                    return {
+                        current: now.getMilliseconds(),
+                        total: 1000
+                    };
+                case 'Second':
+                    return {
+                        current: now.getSeconds(),
+                        total: 60
+                    };
+                case 'Minute':
+                    return {
+                        current: now.getMinutes(),
+                        total: 60
+                    };
+                case 'Hour':
+                    return {
+                        current: now.getHours(),
+                        total: 24
+                    };
+                case 'Day':
+                    const startOfYear = new Date(now.getFullYear(), 0, 0);
+                    const diff = now - startOfYear;
+                    const oneDay = 1000 * 60 * 60 * 24;
+                    return {
+                        current: Math.floor(diff / oneDay),
+                        total: 365.25
+                    };
+                case 'Week':
+                    return {
+                        current: Math.floor(now.getDate() / 7),
+                        total: 52
+                    };
+                case 'Month':
+                    return {
+                        current: now.getMonth(),
+                        total: 12
+                    };
+                case 'Year':
+                    return {
+                        current: now.getFullYear() % 10,
+                        total: 10
+                    };
+                case 'Decade':
+                    return {
+                        current: Math.floor(now.getFullYear() / 10) % 10,
+                        total: 10
+                    };
+                case 'Century':
+                    return {
+                        current: Math.floor(now.getFullYear() / 100) % 10,
+                        total: 10
+                    };
+                default:
+                    return { current: 0, total: 1 };
+            }
+        }
+
+        // Create progress bars for all time scales
+        function createProgressBars() {
+            const container = document.getElementById('progressBarsContainer');
+            const color = document.getElementById('colorPicker').value;
+
+            // Clear existing progress bars
+            container.innerHTML = '';
+
+            timeScales.forEach(scale => {
+                // Create progress bar container
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'progress-container';
+
+                // Create progress bar
+                const progressBar = document.createElement('div');
+                progressBar.className = 'progress-bar';
+                progressBar.style.backgroundColor = color;
+
+                // Create progress info
+                const progressInfo = document.createElement('div');
+                progressInfo.className = 'progress-info';
+
+                // Update progress
+                function updateProgress() {
+                    const progress = getTimeProgress(scale.name);
+                    const percentage = (progress.current / progress.total) * 100;
+                    
+                    progressBar.style.width = `${percentage}%`;
+                    progressInfo.innerHTML = `
+                        <span>${scale.name}</span>
+                        <span>${progress.current.toFixed(2)} / ${progress.total} (${percentage.toFixed(2)}%)</span>
+                    `;
+                }
+
+                // Initial update
+                updateProgress();
+
+                // Append elements
+                progressContainer.appendChild(progressBar);
+                progressContainer.appendChild(progressInfo);
+                container.appendChild(progressContainer);
+
+                // Store update function for later use
+                progressContainer.updateProgress = updateProgress;
+            });
+        }
+
+        // Initial creation of progress bars
+        createProgressBars();
+
+        // Color picker event listener
+        document.getElementById('colorPicker').addEventListener('change', (e) => {
+            const progressBars = document.querySelectorAll('.progress-bar');
+            progressBars.forEach(bar => {
+                bar.style.backgroundColor = e.target.value;
+            });
+        });
+
+        // Update progress bars every 100ms
+        setInterval(() => {
+            const progressContainers = document.querySelectorAll('.progress-container');
+            progressContainers.forEach(container => {
+                container.updateProgress();
+            });
+        }, 100);
+    </script>
+</body>
+</html>
