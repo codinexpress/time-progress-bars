@@ -1,194 +1,1034 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Time Progress Bars</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        .progress-container {
-            margin-bottom: 20px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 30px;
-            transition: width 0.1s linear;
-        }
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 10px;
-            background-color: #e0e0e0;
-        }
-        .color-picker-container {
-            margin-bottom: 10px;
-        }
-        input[type="color"] {
-            width: 100px;
-            height: 50px;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Time Progress Dashboard</title>
+	<style>
+		body {
+			font-family: sans-serif;
+			margin: 20px;
+			background-color: #f4f4f4;
+			color: #333;
+			transition: background-color 0.3s, color 0.3s;
+		}
+
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background-color: white;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+			transition: background-color 0.3s, box-shadow 0.3s;
+		}
+
+		h2 {
+			margin-top: 0;
+			color: #555;
+			transition: color 0.3s;
+		}
+
+		.progress-bar-container {
+			margin-bottom: 15px;
+		}
+
+		.progress-label {
+			font-weight: bold;
+			margin-bottom: 5px;
+			display: block;
+		}
+
+		.progress-bar {
+			width: 100%;
+			height: 20px;
+			background-color: #eee;
+			border-radius: 10px;
+			overflow: hidden;
+			position: relative;
+			transition: background-color 0.3s;
+		}
+
+		.progress-fill {
+			height: 100%;
+			background-color: #4CAF50;
+			/* Default Green */
+			width: 0%;
+			border-radius: 10px;
+			transition: width 0.3s ease, background-color 0.3s ease;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+
+		.progress-text {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			color: white;
+			font-size: 0.8em;
+			font-weight: bold;
+		}
+
+		.stats-section {
+			margin-top: 30px;
+			border-top: 1px solid #ddd;
+			padding-top: 20px;
+			transition: border-color 0.3s;
+		}
+
+		.stat-item {
+			margin-bottom: 10px;
+		}
+
+		.feature-section {
+			margin-top: 30px;
+			border-top: 1px solid #ddd;
+			padding-top: 20px;
+			transition: border-color 0.3s;
+		}
+
+		.feature-item {
+			margin-bottom: 10px;
+		}
+
+		.quote-section {
+			margin-top: 30px;
+			border-top: 1px solid #ddd;
+			padding-top: 20px;
+			font-style: italic;
+			color: #777;
+			text-align: center;
+			transition: border-color 0.3s, color 0.3s;
+		}
+
+		#theme-toggle {
+			position: fixed;
+			top: 10px;
+			right: 10px;
+			padding: 8px 12px;
+			background-color: #333;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			z-index: 1000;
+			/* Ensure button is always on top */
+		}
+
+		.dark-mode {
+			background-color: #333;
+			color: #eee;
+		}
+
+		.dark-mode .container {
+			background-color: #444;
+			color: #eee;
+			box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
+		}
+
+		.dark-mode .progress-bar {
+			background-color: #555;
+		}
+
+		.dark-mode .progress-fill {
+			background-color: #8BC34A;
+			/* Lighter Green for dark mode */
+		}
+
+		.dark-mode .stats-section,
+		.dark-mode .feature-section,
+		.dark-mode .quote-section {
+			border-top-color: #666;
+		}
+
+		/* New Feature Styles */
+		.time-zone-section,
+		.countdown-section,
+		.color-picker-section,
+		.session-timer-section,
+		.analog-clock-section {
+			margin-top: 30px;
+			border-top: 1px solid #ddd;
+			padding-top: 20px;
+			transition: border-color 0.3s;
+		}
+
+		.time-zone-section label,
+		.countdown-section label,
+		.color-picker-section label,
+		.session-timer-section label,
+		.analog-clock-section label {
+			display: block;
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+
+		/* Timezone Search */
+		.timezone-search-container {
+			position: relative;
+		}
+
+		#timezoneSearch {
+			width: calc(100% - 20px);
+			/* Adjust width for padding */
+			padding: 8px;
+			border-radius: 5px;
+			border: 1px solid #ccc;
+			margin-bottom: 5px;
+		}
+
+		#timezoneSearchResults {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			background-color: white;
+			border: 1px solid #ccc;
+			border-top: none;
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
+			max-height: 200px;
+			overflow-y: auto;
+			z-index: 5;
+			display: none;
+			/* Hidden by default */
+		}
+
+		#timezoneSearchResults div {
+			padding: 8px 10px;
+			cursor: pointer;
+		}
+
+		#timezoneSearchResults div:hover {
+			background-color: #f0f0f0;
+		}
+
+		.dark-mode #timezoneSearchResults {
+			background-color: #444;
+			border-color: #666;
+		}
+
+		.dark-mode #timezoneSearchResults div:hover {
+			background-color: #555;
+		}
+
+
+		#countdownTarget {
+			padding: 8px;
+			border-radius: 5px;
+			border: 1px solid #ccc;
+			margin-right: 10px;
+		}
+
+		#countdownDisplay {
+			font-size: 1.2em;
+			font-weight: bold;
+			margin-top: 10px;
+		}
+
+		.countdown-progress-bar-container {
+			margin-top: 5px;
+		}
+
+
+		.color-picker-group {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		.color-picker-group label {
+			flex-shrink: 0;
+			/* Prevent label from shrinking */
+		}
+
+		.color-picker {
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			width: 40px;
+			height: 25px;
+			border: none;
+			border-radius: 3px;
+			cursor: pointer;
+		}
+
+		.color-picker::-webkit-color-swatch-wrapper {
+			padding: 0;
+		}
+
+		.color-picker::-webkit-color-swatch {
+			border: none;
+			border-radius: 3px;
+		}
+
+		.color-picker::-moz-color-swatch-wrapper {
+			padding: 0;
+		}
+
+		.color-picker::-moz-color-swatch {
+			border: none;
+			border-radius: 3px;
+		}
+
+		/* Session Timer Styles */
+		.session-timer-controls button {
+			padding: 8px 12px;
+			margin-right: 5px;
+			border: none;
+			border-radius: 5px;
+			background-color: #007BFF;
+			color: white;
+			cursor: pointer;
+		}
+
+		.session-timer-controls button.stop {
+			background-color: #DC3545;
+		}
+
+		#sessionTimerDisplay {
+			font-size: 1.2em;
+			font-weight: bold;
+			margin-top: 10px;
+		}
+
+		/* Striped Progress Bar Styles */
+		.progress-fill.striped {
+			background-image: linear-gradient(45deg,
+					rgba(255, 255, 255, .15) 25%,
+					transparent 25%,
+					transparent 50%,
+					rgba(255, 255, 255, .15) 50%,
+					rgba(255, 255, 255, .15) 75%,
+					transparent 75%,
+					transparent);
+			background-size: 20px 20px;
+			/* Adjust for stripe width and height */
+		}
+
+		.progress-fill.animated-striped {
+			animation: progress-stripes 1s linear infinite;
+		}
+
+		@keyframes progress-stripes {
+			0% {
+				background-position: 20px 0;
+			}
+
+			/* Start position of stripes */
+			100% {
+				background-position: 0 0;
+			}
+
+			/* Move stripes to the left */
+		}
+	</style>
 </head>
+
 <body>
-    <h1>Time Progress Bars</h1>
-    
-    <div class="color-picker-container">
-        <label for="colorPicker">Choose Progress Bar Color: </label>
-        <input type="color" id="colorPicker" value="#4CAF50">
-    </div>
 
-    <div id="progressBarsContainer"></div>
+	<button id="theme-toggle">Toggle Dark Mode</button>
 
-    <script src="https://app.chatgptbuilder.io/webchat/plugin.js?v=5"></script><script>ktt10.setup({id:"wXsQwCeVUpFMkBV5mD32",accountId:"1168572",color:"#0011FF"})</script>
-    <script>
-        // Time scales with their total units
-        const timeScales = [
-            { name: 'Millisecond', total: 1000 },
-            { name: 'Second', total: 60 },
-            { name: 'Minute', total: 60 },
-            { name: 'Hour', total: 24 },
-            { name: 'Day', total: 365.25 }, // Average days in a year
-            { name: 'Week', total: 52 },
-            { name: 'Month', total: 12 },
-            { name: 'Year', total: 10 }, // Decade
-            { name: 'Decade', total: 10 }, // Century
-            { name: 'Century', total: 10 }, // Millennium
-        ];
+	<div class="container">
+		<h2>Time Progress Dashboard</h2>
 
-        // Function to get current value and percentage for different time scales
-        function getTimeProgress(scale) {
+		<div class="time-zone-section">
+			<label for="timezoneSearch">Select Time Zone:</label>
+			<div class="timezone-search-container">
+				<input type="text" id="timezoneSearch" placeholder="Search time zone...">
+				<div id="timezoneSearchResults"></div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Day Progress</span>
+			<div class="progress-bar" id="dayProgress">
+				<div class="progress-fill" id="dayProgressFill">
+					<span class="progress-text" id="dayProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Week Progress</span>
+			<div class="progress-bar" id="weekProgress">
+				<div class="progress-fill" id="weekProgressFill">
+					<span class="progress-text" id="weekProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Month Progress</span>
+			<div class="progress-bar" id="monthProgress">
+				<div class="progress-fill" id="monthProgressFill">
+					<span class="progress-text" id="monthProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Year Progress</span>
+			<div class="progress-bar" id="yearProgress">
+				<div class="progress-fill" id="yearProgressFill">
+					<span class="progress-text" id="yearProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Decade Progress</span>
+			<div class="progress-bar" id="decadeProgress">
+				<div class="progress-fill" id="decadeProgressFill">
+					<span class="progress-text" id="decadeProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Score (20 Years) Progress</span>
+			<div class="progress-bar" id="scoreProgress">
+				<div class="progress-fill" id="scoreProgressFill">
+					<span class="progress-text" id="scoreProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Century (100 Years) Progress</span>
+			<div class="progress-bar" id="centuryProgress">
+				<div class="progress-fill" id="centuryProgressFill">
+					<span class="progress-text" id="centuryProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="progress-bar-container">
+			<span class="progress-label">Time Left in Day</span>
+			<div class="progress-bar" id="timeLeftDayProgress">
+				<div class="progress-fill" id="timeLeftDayProgressFill" style="background-color: orange;">
+					<span class="progress-text" id="timeLeftDayProgressText">0%</span>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="stats-section">
+			<h2>Various Statistics</h2>
+			<div class="stat-item" id="currentDate">Current Date: Loading...</div>
+			<div class="stat-item" id="currentTime">Current Time: Loading...</div>
+			<div class="stat-item" id="dayOfYear">Day of Year: Loading...</div>
+			<div class="stat-item" id="weekOfYear">Week of Year: Loading...</div>
+			<div class="stat-item" id="daysInMonth">Days in Current Month: Loading...</div>
+			<div class="stat-item" id="secondsPassedToday">Seconds Passed Today: Loading...</div>
+			<div class="stat-item" id="timeSpentOnSite">Time Spent on Site: Loading...</div>
+		</div>
+
+
+		<div class="countdown-section">
+			<label for="countdownTarget">Countdown Timer:</label>
+			<input type="datetime-local" id="countdownTarget">
+			<div id="countdownDisplay">Set a target date and time.</div>
+			<div class="countdown-progress-bar-container">
+				<div class="progress-bar" id="countdownProgressBar">
+					<div class="progress-fill" id="countdownProgressFill" style="background-color: purple;">
+						<span class="progress-text" id="countdownProgressText">0%</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="color-picker-section">
+			<label>Customize Progress Bar Colors:</label>
+			<div class="color-picker-group">
+				<label for="dayColorPicker">Day:</label>
+				<input type="color" id="dayColorPicker" class="color-picker" value="#4CAF50">
+            </div>
+				<div class="color-picker-group">
+					<label for="weekColorPicker">Week:</label>
+					<input type="color" id="weekColorPicker" class="color-picker" value="#2196F3">
+            </div>
+					<div class="color-picker-group">
+						<label for="monthColorPicker">Month:</label>
+						<input type="color" id="monthColorPicker" class="color-picker" value="#FF9800">
+            </div>
+						<div class="color-picker-group">
+							<label for="yearColorPicker">Year:</label>
+							<input type="color" id="yearColorPicker" class="color-picker" value="#9C27B0">
+            </div>
+							<div class="color-picker-group">
+								<label for="decadeColorPicker">Decade:</label>
+								<input type="color" id="decadeColorPicker" class="color-picker" value="#E91E63">
+            </div>
+								<div class="color-picker-group">
+									<label for="scoreColorPicker">Score:</label>
+									<input type="color" id="scoreColorPicker" class="color-picker" value="#00BCD4">
+            </div>
+									<div class="color-picker-group">
+										<label for="centuryColorPicker">Century:</label>
+										<input type="color" id="centuryColorPicker" class="color-picker" value="#607D8B">
+            </div>
+										<div class="color-picker-group">
+											<label for="timeLeftDayColorPicker">Time Left Day:</label>
+											<input type="color" id="timeLeftDayColorPicker" class="color-picker" value="orange">
+            </div>
+											<div class="color-picker-group">
+												<label for="countdownColorPicker">Countdown:</label>
+												<input type="color" id="countdownColorPicker" class="color-picker" value="purple">
+            </div>
+											</div>
+
+											<div class="session-timer-section">
+												<label>Session Timer (Focus Timer):</label>
+												<div id="sessionTimerDisplay">00:00:00</div>
+												<div class="session-timer-controls">
+													<button id="sessionStart">Start</button>
+													<button id="sessionPause">Pause</button>
+													<button id="sessionReset">Reset</button>
+												</div>
+											</div>
+
+											<div class="analog-clock-section">
+												<label>Analog Clock:</label>
+												<div id="analogClockEmbed">
+													<!-- Analog clock embed will be placed here by JavaScript -->
+												</div>
+											</div>
+
+
+											<div class="feature-section">
+												<h2>Additional Features</h2>
+												<div class="feature-item">
+													<label for="updateInterval">Update Interval (seconds):</label>
+													<input type="number" id="updateInterval" value="1" min="1">
+													<button id="applyInterval">Apply</button>
+												</div>
+												<div class="feature-item">
+													<label>Progress Bar Style:</label>
+													<select id="progressBarVisualStyle">
+                    <option value="default">Default</option>
+                    <option value="striped">Striped</option>
+                    <option value="animated-striped">Animated Striped</option>
+                </select>
+												</div>
+											</div>
+
+											<div class="quote-section" id="dailyQuote">
+												"The future belongs to those who believe in the beauty of their dreams."
+												- Eleanor Roosevelt
+											</div>
+
+											<div class="offline-message"
+												style="display: none; text-align: center; padding: 10px; background-color: #ddd; margin-top: 20px;">
+												You are currently offline. Some features may be limited.
+											</div>
+
+
+										</div>
+
+										<script>
+											// Service Worker for Offline Support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                window.location.reload();
+            });
+        }
+
+        const offlineMessage = document.querySelector('.offline-message');
+        window.addEventListener('offline', () => {
+            offlineMessage.style.display = 'block';
+        });
+        window.addEventListener('online', () => {
+            offlineMessage.style.display = 'none';
+        });
+
+
+        const dayProgressFill = document.getElementById('dayProgressFill');
+        const dayProgressText = document.getElementById('dayProgressText');
+        const weekProgressFill = document.getElementById('weekProgressFill');
+        const weekProgressText = document.getElementById('weekProgressText');
+        const monthProgressFill = document.getElementById('monthProgressFill');
+        const monthProgressText = document.getElementById('monthProgressText');
+        const yearProgressFill = document.getElementById('yearProgressFill');
+        const yearProgressText = document.getElementById('yearProgressText');
+        const decadeProgressFill = document.getElementById('decadeProgressFill');
+        const decadeProgressText = document.getElementById('decadeProgressText');
+        const scoreProgressFill = document.getElementById('scoreProgressFill');
+        const scoreProgressText = document.getElementById('scoreProgressText');
+        const centuryProgressFill = document.getElementById('centuryProgressFill');
+        const centuryProgressText = document.getElementById('centuryProgressText');
+        const timeLeftDayProgressFill = document.getElementById('timeLeftDayProgressFill');
+        const timeLeftDayProgressText = document.getElementById('timeLeftDayProgressText');
+        const countdownProgressFill = document.getElementById('countdownProgressFill');
+        const countdownProgressText = document.getElementById('countdownProgressText');
+        const countdownProgressBar = document.getElementById('countdownProgressBar');
+
+
+        const currentDateDisplay = document.getElementById('currentDate');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const dayOfYearDisplay = document.getElementById('dayOfYear');
+        const weekOfYearDisplay = document.getElementById('weekOfYear');
+        const daysInMonthDisplay = document.getElementById('daysInMonth');
+        const secondsPassedTodayDisplay = document.getElementById('secondsPassedToday');
+        const timeSpentOnSiteDisplay = document.getElementById('timeSpentOnSite');
+
+        const updateIntervalInput = document.getElementById('updateInterval');
+        const applyIntervalButton = document.getElementById('applyInterval');
+        const dailyQuoteDisplay = document.getElementById('dailyQuote');
+        const themeToggle = document.getElementById('theme-toggle');
+        const timezoneSearchInput = document.getElementById('timezoneSearch');
+        const timezoneSearchResultsDiv = document.getElementById('timezoneSearchResults');
+
+        const countdownTargetInput = document.getElementById('countdownTarget');
+        const countdownDisplay = document.getElementById('countdownDisplay');
+
+        const dayColorPicker = document.getElementById('dayColorPicker');
+        const weekColorPicker = document.getElementById('weekColorPicker');
+        const monthColorPicker = document.getElementById('monthColorPicker');
+        const yearColorPicker = document.getElementById('yearColorPicker');
+        const decadeColorPicker = document.getElementById('decadeColorPicker');
+        const scoreColorPicker = document.getElementById('scoreColorPicker');
+        const centuryColorPicker = document.getElementById('centuryColorPicker');
+        const timeLeftDayColorPicker = document.getElementById('timeLeftDayColorPicker');
+        const countdownColorPicker = document.getElementById('countdownColorPicker');
+        const progressBarVisualStyleSelect = document.getElementById('progressBarVisualStyle');
+
+        const sessionTimerDisplay = document.getElementById('sessionTimerDisplay');
+        const sessionStartButton = document.getElementById('sessionStart');
+        const sessionPauseButton = document.getElementById('sessionPause');
+        const sessionResetButton = document.getElementById('sessionReset');
+        const analogClockEmbedDiv = document.getElementById('analogClockEmbed');
+
+
+        let updateInterval = parseInt(updateIntervalInput.value, 10) * 1000; // Default 1 second
+        let selectedTimeZone = 'local'; // Default to local time
+        let countdownIntervalId = null;
+        let siteStartTime = Date.now(); // Record site start time
+        let sessionTimerInterval = null;
+        let sessionStartTime = 0;
+        let sessionElapsedTime = 0;
+        let sessionRunning = false;
+        let timezonesData = []; // Will store fetched timezone data
+
+
+        // Load Visual Preferences from localStorage
+        function loadVisualPreferences() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+
+            const storedTimeZone = localStorage.getItem('timeZone');
+            if (storedTimeZone) {
+                selectedTimeZone = storedTimeZone;
+            }
+
+            dayColorPicker.value = localStorage.getItem('dayColor') || '#4CAF50';
+            weekColorPicker.value = localStorage.getItem('weekColor') || '#2196F3';
+            monthColorPicker.value = localStorage.getItem('monthColor') || '#FF9800';
+            yearColorPicker.value = localStorage.getItem('yearColor') || '#9C27B0';
+            decadeColorPicker.value = localStorage.getItem('decadeColor') || '#E91E63';
+            scoreColorPicker.value = localStorage.getItem('scoreColor') || '#00BCD4';
+            centuryColorPicker.value = localStorage.getItem('centuryColor') || '#607D8B';
+            timeLeftDayColorPicker.value = localStorage.getItem('timeLeftDayColor') || 'orange';
+            countdownColorPicker.value = localStorage.getItem('countdownColor') || 'purple';
+
+            progressBarVisualStyleSelect.value = localStorage.getItem('progressBarVisualStyle') || 'default';
+
+            // Apply loaded preferences
+            applyColorPreferences();
+            applyVisualStylePreference();
+        }
+
+        function saveVisualPreferences() {
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            localStorage.setItem('timeZone', selectedTimeZone);
+
+            localStorage.setItem('dayColor', dayColorPicker.value);
+            localStorage.setItem('weekColor', weekColorPicker.value);
+            localStorage.setItem('monthColor', monthColorPicker.value);
+            localStorage.setItem('yearColor', yearColorPicker.value);
+            localStorage.setItem('decadeColor', decadeColorPicker.value);
+            localStorage.setItem('scoreColor', scoreColorPicker.value);
+            localStorage.setItem('centuryColor', centuryColorPicker.value);
+            localStorage.setItem('timeLeftDayColor', timeLeftDayColorPicker.value);
+            localStorage.setItem('countdownColor', countdownColorPicker.value);
+            localStorage.setItem('progressBarVisualStyle', progressBarVisualStyleSelect.value);
+
+        }
+
+        function applyColorPreferences() {
+            dayProgressFill.style.backgroundColor = dayColorPicker.value;
+            weekProgressFill.style.backgroundColor = weekColorPicker.value;
+            monthProgressFill.style.backgroundColor = monthColorPicker.value;
+            yearProgressFill.style.backgroundColor = yearColorPicker.value;
+            decadeProgressFill.style.backgroundColor = decadeColorPicker.value;
+            scoreProgressFill.style.backgroundColor = scoreColorPicker.value;
+            centuryProgressFill.style.backgroundColor = centuryColorPicker.value;
+            timeLeftDayProgressFill.style.backgroundColor = timeLeftDayColorPicker.value;
+            countdownProgressFill.style.backgroundColor = countdownColorPicker.value;
+        }
+
+        function applyVisualStylePreference() {
+            const style = progressBarVisualStyleSelect.value;
+            const progressFills = document.querySelectorAll('.progress-fill');
+            progressFills.forEach(fill => {
+                fill.classList.remove('striped', 'animated-striped');
+                if (style === 'striped') {
+                    fill.classList.add('striped');
+                } else if (style === 'animated-striped') {
+                    fill.classList.add('striped', 'animated-striped');
+                }
+            });
+        }
+
+
+        function updateProgressBars() {
             const now = new Date();
-            switch(scale) {
-                case 'Millisecond':
-                    return {
-                        current: now.getMilliseconds(),
-                        total: 1000
-                    };
-                case 'Second':
-                    return {
-                        current: now.getSeconds(),
-                        total: 60
-                    };
-                case 'Minute':
-                    return {
-                        current: now.getMinutes(),
-                        total: 60
-                    };
-                case 'Hour':
-                    return {
-                        current: now.getHours(),
-                        total: 24
-                    };
-                case 'Day':
-                    const startOfYear = new Date(now.getFullYear(), 0, 0);
-                    const diff = now - startOfYear;
-                    const oneDay = 1000 * 60 * 60 * 24;
-                    return {
-                        current: Math.floor(diff / oneDay),
-                        total: 365.25
-                    };
-                case 'Week':
-                    return {
-                        current: Math.floor(now.getDate() / 7),
-                        total: 52
-                    };
-                case 'Month':
-                    return {
-                        current: now.getMonth(),
-                        total: 12
-                    };
-                case 'Year':
-                    return {
-                        current: now.getFullYear() % 10,
-                        total: 10
-                    };
-                case 'Decade':
-                    return {
-                        current: Math.floor(now.getFullYear() / 10) % 10,
-                        total: 10
-                    };
-                case 'Century':
-                    return {
-                        current: Math.floor(now.getFullYear() / 100) % 10,
-                        total: 10
-                    };
-                default:
-                    return { current: 0, total: 1 };
+            const timeZone = selectedTimeZone === 'local' ? undefined : selectedTimeZone;
+
+            // Day Progress
+            let secondsInDay = 24 * 60 * 60;
+            let secondsPassed = getSecondsPassedToday(now, timeZone);
+            let dayProgress = (secondsPassed / secondsInDay) * 100;
+            dayProgressFill.style.width = `${dayProgress}%`;
+            dayProgressText.textContent = `${dayProgress.toFixed(2)}%`;
+
+            // Week Progress
+            let dayOfWeek = getDayOfWeek(now, timeZone);
+            let weekProgress = (dayOfWeek / 7) * 100;
+            weekProgressFill.style.width = `${weekProgress}%`;
+            weekProgressText.textContent = `${weekProgress.toFixed(2)}%`;
+
+            // Month Progress
+            let dayOfMonth = getDayOfMonth(now, timeZone);
+            let daysInMonth = getDaysInMonth(now, timeZone);
+            let monthProgress = (dayOfMonth / daysInMonth) * 100;
+            monthProgressFill.style.width = `${monthProgress}%`;
+            monthProgressText.textContent = `${monthProgress.toFixed(2)}%`;
+            daysInMonthDisplay.textContent = `Days in Current Month: ${daysInMonth}`;
+
+            // Year Progress
+            let dayOfYear = getDayOfYear(now, timeZone);
+            let isLeap = isLeapYear(now, timeZone);
+            let daysInYear = isLeap ? 366 : 365;
+            let yearProgress = (dayOfYear / daysInYear) * 100;
+            yearProgressFill.style.width = `${yearProgress}%`;
+            yearProgressText.textContent = `${yearProgress.toFixed(2)}%`;
+            dayOfYearDisplay.textContent = `Day of Year: ${dayOfYear} / ${daysInYear} (${isLeap ? 'Leap Year' : 'Normal Year'})`;
+
+            // Decade Progress
+            let currentYear = getFullYear(now, timeZone);
+            let startOfDecade = Math.floor(currentYear / 10) * 10;
+            let yearInDecade = currentYear - startOfDecade;
+            let decadeProgress = (yearInDecade / 10) * 100;
+            decadeProgressFill.style.width = `${decadeProgress}%`;
+            decadeProgressText.textContent = `${decadeProgress.toFixed(2)}%`;
+
+            // Score (20 Years) Progress
+            let startOfScorePeriod = Math.floor(currentYear / 20) * 20;
+            let yearInScorePeriod = currentYear - startOfScorePeriod;
+            let scoreProgress = (yearInScorePeriod / 20) * 100;
+            scoreProgressFill.style.width = `${scoreProgress}%`;
+            scoreProgressText.textContent = `${scoreProgress.toFixed(2)}%`;
+
+            // Century (100 Years) Progress
+            let startOfCentury = Math.floor(currentYear / 100) * 100;
+            let yearInCentury = currentYear - startOfCentury;
+            let centuryProgress = (yearInCentury / 100) * 100;
+            centuryProgressFill.style.width = `${centuryProgress}%`;
+            centuryProgressText.textContent = `${centuryProgress.toFixed(2)}%`;
+
+            // Time Left in Day Progress
+            let secondsRemainingInDay = secondsInDay - secondsPassed;
+            let timeLeftDayProgress = (secondsRemainingInDay / secondsInDay) * 100;
+            timeLeftDayProgressFill.style.width = `${timeLeftDayProgress}%`;
+            timeLeftDayProgressText.textContent = `${timeLeftDayProgress.toFixed(2)}%`;
+
+
+            // Update Stats
+            currentDateDisplay.textContent = `Current Date: ${toLocaleDateString(now, timeZone)}`;
+            currentTimeDisplay.textContent = `Current Time: ${toLocaleTimeString(now, timeZone)}`;
+            weekOfYearDisplay.textContent = `Week of Year: ${getWeekOfYear(now, timeZone)}`;
+            secondsPassedTodayDisplay.textContent = `Seconds Passed Today: ${secondsPassed}`;
+            timeSpentOnSiteDisplay.textContent = `Time Spent on Site: ${getTimeSpentOnSite()}`;
+        }
+
+        function getTimeSpentOnSite() {
+            const elapsedTimeMs = Date.now() - siteStartTime;
+            const seconds = Math.floor(elapsedTimeMs / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+
+            const displayHours = String(hours).padStart(2, '0');
+            const displayMinutes = String(minutes % 60).padStart(2, '0');
+            const displaySeconds = String(seconds % 60).padStart(2, '0');
+
+            return `${displayHours}:${displayMinutes}:${displaySeconds}`;
+        }
+
+
+        // Time Zone aware date/time functions (same as before)
+        function getFullYear(date, timeZone) { return new Date(date.toLocaleString('en-US', { timeZone })).getFullYear(); }
+        function getDayOfMonth(date, timeZone) { return new Date(date.toLocaleString('en-US', { timeZone })).getDate(); }
+        function getDayOfWeek(date, timeZone) { return new Date(date.toLocaleString('en-US', { timeZone })).getDay(); }
+        function getDaysInMonth(date, timeZone) {
+            const d = new Date(date.toLocaleString('en-US', { timeZone }));
+            return new Date(getFullYear(d, timeZone), d.getMonth() + 1, 0).getDate();
+        }
+        function isLeapYear(date, timeZone) {
+            const year = getFullYear(date, timeZone);
+            return new Date(year, 1, 29).getDate() === 29;
+        }
+        function getDayOfYear(date, timeZone) {
+            const d = new Date(date.toLocaleString('en-US', { timeZone }));
+            const startOfYear = new Date(getFullYear(d, timeZone), 0, 0);
+            const diff = d - startOfYear;
+            const oneDay = 1000 * 60 * 60 * 24;
+            return Math.floor(diff / oneDay);
+        }
+        function getWeekOfYear(date, timeZone) {
+            const d = new Date(date.toLocaleString('en-US', { timeZone }));
+            const dayNum = getDayOfWeek(d, timeZone) || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(getFullYear(d, timeZone), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+        function getSecondsPassedToday(date, timeZone) {
+            const d = new Date(date.toLocaleString('en-US', { timeZone }));
+            return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+        }
+        function toLocaleDateString(date, timeZone) {
+            return date.toLocaleString('en-US', { timeZone, dateStyle: 'medium' });
+        }
+        function toLocaleTimeString(date, timeZone) {
+            return date.toLocaleString('en-US', { timeZone, timeStyle: 'medium' });
+        }
+
+        function updateQuote() {
+            const quotes = [
+                "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
+                "The best time to plant a tree was 20 years ago. The second best time is now. - Chinese Proverb",
+                "Time you enjoy wasting is not wasted time. - John Lennon",
+                "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
+                "Lost time is never found again. - Benjamin Franklin",
+                "The two most powerful warriors are patience and time. - Leo Tolstoy",
+                "Time is what we want most, but what we use worst. - William Penn"
+            ];
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            dailyQuoteDisplay.textContent = quotes[randomIndex];
+        }
+
+        // Feature: Update Interval
+        applyIntervalButton.addEventListener('click', () => {
+            updateInterval = parseInt(updateIntervalInput.value, 10) * 1000;
+            if (updateInterval < 1000) updateInterval = 1000;
+            clearInterval(intervalId);
+            intervalId = setInterval(updateDashboard, updateInterval);
+        });
+
+
+        // Feature: Dark Mode Toggle
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            saveVisualPreferences();
+        });
+
+        // Feature: Time Zone Search and Selection
+        fetch('https://github.com/dmfilipenko/timezones.json/raw/refs/heads/master/timezones.json')
+            .then(response => response.json())
+            .then(data => {
+                timezonesData = data;
+                timezoneSearchInput.addEventListener('input', () => {
+                    const searchTerm = timezoneSearchInput.value.toLowerCase();
+                    const results = timezonesData.filter(tz =>
+                        tz.text.toLowerCase().includes(searchTerm) || tz.utc.some(u => u.toLowerCase().includes(searchTerm))
+                    );
+                    displayTimezoneResults(results);
+                });
+
+                // Set initial timezone display (after data is loaded)
+                updateTimezoneDisplay();
+            })
+            .catch(error => console.error('Error fetching timezones:', error));
+
+
+        function displayTimezoneResults(results) {
+            timezoneSearchResultsDiv.innerHTML = '';
+            timezoneSearchResultsDiv.style.display = 'none'; // Hide if no results
+
+            if (results.length > 0 && timezoneSearchInput.value.trim() !== '') {
+                timezoneSearchResultsDiv.style.display = 'block'; // Show if results
+                results.forEach(timezone => {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.textContent = timezone.text;
+                    resultDiv.addEventListener('click', () => {
+                        selectedTimeZone = timezone.utc[0]; // Use the first UTC value as timezone identifier
+                        timezoneSearchInput.value = timezone.text; // Display full timezone text in input
+                        timezoneSearchResultsDiv.style.display = 'none';
+                        updateDashboard();
+                        saveVisualPreferences();
+                        updateTimezoneDisplay();
+                    });
+                    timezoneSearchResultsDiv.appendChild(resultDiv);
+                });
             }
         }
 
-        // Create progress bars for all time scales
-        function createProgressBars() {
-            const container = document.getElementById('progressBarsContainer');
-            const color = document.getElementById('colorPicker').value;
-
-            // Clear existing progress bars
-            container.innerHTML = '';
-
-            timeScales.forEach(scale => {
-                // Create progress bar container
-                const progressContainer = document.createElement('div');
-                progressContainer.className = 'progress-container';
-
-                // Create progress bar
-                const progressBar = document.createElement('div');
-                progressBar.className = 'progress-bar';
-                progressBar.style.backgroundColor = color;
-
-                // Create progress info
-                const progressInfo = document.createElement('div');
-                progressInfo.className = 'progress-info';
-
-                // Update progress
-                function updateProgress() {
-                    const progress = getTimeProgress(scale.name);
-                    const percentage = (progress.current / progress.total) * 100;
-                    
-                    progressBar.style.width = `${percentage}%`;
-                    progressInfo.innerHTML = `
-                        <span>${scale.name}</span>
-                        <span>${progress.current.toFixed(2)} / ${progress.total} (${percentage.toFixed(2)}%)</span>
-                    `;
+        function updateTimezoneDisplay() {
+            if (selectedTimeZone === 'local') {
+                timezoneSearchInput.value = 'Local Time';
+            } else {
+                const selectedTzData = timezonesData.find(tz => tz.utc.includes(selectedTimeZone));
+                if (selectedTzData) {
+                    timezoneSearchInput.value = selectedTzData.text;
+                } else {
+                    timezoneSearchInput.value = selectedTimeZone; // Fallback to timezone string if not found
                 }
-
-                // Initial update
-                updateProgress();
-
-                // Append elements
-                progressContainer.appendChild(progressBar);
-                progressContainer.appendChild(progressInfo);
-                container.appendChild(progressContainer);
-
-                // Store update function for later use
-                progressContainer.updateProgress = updateProgress;
-            });
+            }
         }
 
-        // Initial creation of progress bars
-        createProgressBars();
 
-        // Color picker event listener
-        document.getElementById('colorPicker').addEventListener('change', (e) => {
-            const progressBars = document.querySelectorAll('.progress-bar');
-            progressBars.forEach(bar => {
-                bar.style.backgroundColor = e.target.value;
-            });
+        // Feature: Countdown Timer
+        countdownTargetInput.addEventListener('change', () => {
+            clearInterval(countdownIntervalId);
+            const targetTime = new Date(countdownTargetInput.value).getTime();
+            if (isNaN(targetTime)) {
+                countdownDisplay.textContent = 'Invalid date/time.';
+                countdownProgressFill.style.width = '0%';
+                countdownProgressText.textContent = '0%';
+                return;
+            }
+
+            countdownIntervalId = setInterval(() => {
+                const now = new Date().getTime();
+                const timeLeft = targetTime - now;
+                const totalTime = new Date(countdownTargetInput.value).getTime() - new Date().getTime(); // initial total time
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownIntervalId);
+                    countdownDisplay.textContent = 'Countdown finished!';
+                    countdownProgressFill.style.width = '100%';
+                    countdownProgressText.textContent = '100%';
+                    return;
+                }
+
+                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                countdownDisplay.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+                const progressPercentage = ((totalTime - timeLeft) / totalTime) * 100;
+                countdownProgressFill.style.width = `${progressPercentage}%`;
+                countdownProgressText.textContent = `${progressPercentage.toFixed(2)}%`;
+
+
+            }, 1000);
         });
 
-        // Update progress bars every 100ms
-        setInterval(() => {
-            const progressContainers = document.querySelectorAll('.progress-container');
-            progressContainers.forEach(container => {
-                container.updateProgress();
-            });
-        }, 1);
-    </script>
+        // Feature: Progress Bar Color Customization
+        dayColorPicker.addEventListener('input', (event) => { dayProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        weekColorPicker.addEventListener('input', (event) => { weekProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        monthColorPicker.addEventListener('input', (event) => { monthProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        yearColorPicker.addEventListener('input', (event) => { yearProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        decadeColorPicker.addEventListener('input', (event) => { decadeProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        scoreColorPicker.addEventListener('input', (event) => { scoreProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        centuryColorPicker.addEventListener('input', (event) => { centuryProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        timeLeftDayColorPicker.addEventListener('input', (event) => { timeLeftDayProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+        countdownColorPicker.addEventListener('input', (event) => { countdownProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
+
+
+        // Feature: Progress Bar Visual Style
+        progressBarVisualStyleSelect.addEventListener('change', () => {
+            applyVisualStylePreference();
+            saveVisualPreferences();
+        });
+
+
+        // Feature: Session Timer (Focus Timer) (same as before)
+        sessionStartButton.addEventListener('click', () => {
+            if (!sessionRunning) {
+                sessionRunning = true;
+                if (sessionStartTime === 0) {
+                    sessionStartTime = Date.now() - sessionElapsedTime;
+                } else {
+                    sessionStartTime = Date.now() - sessionElapsedTime;
+                }
+
+                sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+                sessionStartButton.textContent = 'Resume';
+                sessionPauseButton.textContent = 'Pause';
+            } else {
+                sessionRunning = true;
+                sessionStartTime = Date.now() - sessionElapsedTime;
+                sessionTimerInterval = setInterval(updateSessionTimer, 1000);
+                sessionStartButton.textContent = 'Resume';
+                sessionPauseButton.textContent = 'Pause';
+            }
+        });
+
+        sessionPauseButton.addEventListener('click', () => {
+            if (sessionRunning) {
+                sessionRunning = false;
+                clearInterval(sessionTimerInterval);
+                sessionElapsedTime = Date.now() - sessionStartTime;
+                sessionStartButton.textContent = 'Resume';
+                sessionPauseButton.textContent = 'Pause';
+            }
+        });
+
+        sessionResetButton.addEventListener('click', () => {
+            sessionRunning = false;
+            clearInterval(sessionTimerInterval);
+            sessionStartTime = 0;
+            sessionElapsedTime = 0;
+            sessionTimerDisplay.textContent = '00:00:00';
+            sessionStartButton.textContent = 'Start';
+            sessionPauseButton.textContent = 'Pause';
+        });
+
+        function updateSessionTimer() {
+            sessionElapsedTime = Date.now() - sessionStartTime;
+            const seconds = Math.floor(sessionElapsedTime / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+
+            const displayHours = String(hours).padStart(2, '0');
+            const displayMinutes = String(minutes % 60).padStart(2, '0');
+            const displaySeconds = String(seconds % 60).padStart(2, '0');
+
+            sessionTimerDisplay.textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
+        }
+
+        // Feature: Analog Clock (Embed - using a simple iframe example, replace with better if needed)
+        function embedAnalogClock() {
+            analogClockEmbedDiv.innerHTML = `<iframe src="https://free.timeanddate.com/clock/i8zt1kw1/n840/szw110/szh110/hoc000/hbw0/hfc000/cf100/hnc0ff9/hcw2/hsw3/fas0/fap60/fan8/fdi0/fdr0/fhs0/fhc000/fhm000/fhs000" frameborder="0" width="110" height="110"></iframe>`;
+        }
+
+
+        function updateDashboard() {
+            updateProgressBars();
+            updateQuote();
+        }
+
+
+        loadVisualPreferences(); // Load preferences on page load, before initial update
+        updateTimezoneDisplay(); // Set initial timezone input text
+        updateDashboard(); // Initial update on page load
+        embedAnalogClock(); // Embed analog clock
+        let intervalId = setInterval(updateDashboard, updateInterval); // Update every second initially
+
+
+										</script>
+
 </body>
+
 </html>
