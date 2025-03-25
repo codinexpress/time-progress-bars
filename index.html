@@ -4,47 +4,112 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Time Progress Dashboard</title>
+	<title>Enhanced Time Progress Dashboard</title>
 	<style>
+		:root {
+			--bg-color: #f4f4f4;
+			--text-color: #333;
+			--container-bg: white;
+			--container-shadow: rgba(0, 0, 0, 0.1);
+			--heading-color: #555;
+			--progress-bg: #eee;
+			--progress-text-color: white;
+			--border-color: #ddd;
+			--quote-color: #777;
+			--button-bg: #333;
+			--button-text: white;
+			--link-color: #007bff;
+			--input-border: #ccc;
+			--input-bg: white;
+			--search-result-bg: white;
+			--search-result-hover: #f0f0f0;
+			--primary-action-bg: #007BFF;
+			--danger-action-bg: #DC3545;
+			--analog-clock-border: #999;
+			--analog-clock-face: #fff;
+			--analog-clock-hands: #333;
+			--analog-clock-second-hand: red;
+            --feedback-bg: rgba(0, 123, 255, 0.8);
+            --feedback-text: white;
+            --pulse-color: rgba(0, 123, 255, 0.3);
+		}
+
 		body {
-			font-family: sans-serif;
-			margin: 20px;
-			background-color: #f4f4f4;
-			color: #333;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			margin: 0;
+			padding: 20px;
+			background-color: var(--bg-color);
+			color: var(--text-color);
 			transition: background-color 0.3s, color 0.3s;
+			line-height: 1.6;
 		}
 
 		.container {
-			max-width: 800px;
-			margin: 0 auto;
-			background-color: white;
-			padding: 20px;
-			border-radius: 8px;
-			box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-			transition: background-color 0.3s, box-shadow 0.3s;
+			max-width: 850px;
+			margin: 40px auto 20px auto; /* Increased top margin */
+			background-color: var(--container-bg);
+			padding: 25px;
+			border-radius: 10px;
+			box-shadow: 0 4px 10px var(--container-shadow);
+			transition: background-color 0.3s, box-shadow 0.3s, color 0.3s;
 		}
+
+        #loading-indicator {
+            text-align: center;
+            font-size: 1.2em;
+            padding: 40px;
+            color: var(--heading-color);
+        }
+
+        /* Hide container until JS is ready */
+        .container.hidden {
+            display: none;
+        }
 
 		h2 {
 			margin-top: 0;
-			color: #555;
-			transition: color 0.3s;
+			margin-bottom: 20px;
+			color: var(--heading-color);
+			border-bottom: 1px solid var(--border-color);
+			padding-bottom: 10px;
+			transition: color 0.3s, border-color 0.3s;
 		}
 
+		/* Section Styling */
+		.progress-section,
+		.stats-section,
+		.feature-section,
+		.quote-section,
+		.time-zone-section,
+		.countdown-section,
+		.color-picker-section,
+		.session-timer-section,
+        .analog-clock-section,
+        .settings-section,
+        .shortcuts-section {
+			margin-top: 35px;
+			border-top: 1px solid var(--border-color);
+			padding-top: 25px;
+			transition: border-color 0.3s;
+		}
+
+		/* Progress Bars */
 		.progress-bar-container {
-			margin-bottom: 15px;
+			margin-bottom: 18px;
 		}
 
 		.progress-label {
-			font-weight: bold;
-			margin-bottom: 5px;
+			font-weight: 600;
+			margin-bottom: 6px;
 			display: block;
+			font-size: 0.95em;
 		}
 
 		.progress-bar {
 			width: 100%;
-			height: 20px;
-			background-color: #eee;
-			border-radius: 10px;
+			height: 22px;
+			background-color: var(--progress-bg);
+			border-radius: 11px;
 			overflow: hidden;
 			position: relative;
 			transition: background-color 0.3s;
@@ -52,633 +117,1349 @@
 
 		.progress-fill {
 			height: 100%;
-			background-color: #4CAF50;
-			/* Default Green */
+			background-color: #4CAF50; /* Default Green */
 			width: 0%;
-			border-radius: 10px;
-			transition: width 0.3s ease, background-color 0.3s ease;
+			border-radius: 11px;
+			transition: width 0.5s ease-out, background-color 0.3s ease;
 			position: absolute;
 			left: 0;
 			top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 		}
 
 		.progress-text {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			color: white;
-			font-size: 0.8em;
-			font-weight: bold;
+            color: var(--progress-text-color);
+            font-size: 0.8em;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
 		}
 
-		.stats-section {
-			margin-top: 30px;
-			border-top: 1px solid #ddd;
-			padding-top: 20px;
-			transition: border-color 0.3s;
+        /* Striped Progress Bar Styles */
+		.progress-fill.striped {
+			background-image: linear-gradient(45deg,
+					rgba(255, 255, 255, .15) 25%, transparent 25%,
+					transparent 50%, rgba(255, 255, 255, .15) 50%,
+					rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+			background-size: 25px 25px;
+		}
+		.progress-fill.animated-striped {
+			animation: progress-stripes 1s linear infinite;
+		}
+		@keyframes progress-stripes {
+			0% { background-position: 25px 0; }
+			100% { background-position: 0 0; }
 		}
 
+		/* Stats */
 		.stat-item {
-			margin-bottom: 10px;
+			margin-bottom: 12px;
+			font-size: 0.95em;
 		}
+        .stat-item span {
+            font-weight: 600;
+            min-width: 180px;
+            display: inline-block;
+        }
 
-		.feature-section {
-			margin-top: 30px;
-			border-top: 1px solid #ddd;
-			padding-top: 20px;
-			transition: border-color 0.3s;
+		/* Features & Settings */
+		.feature-item, .setting-item {
+			margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
 		}
+        .feature-item label, .setting-item label {
+            flex-shrink: 0;
+            width: 180px; /* Align labels */
+        }
+        input[type="number"], input[type="text"], select, input[type="datetime-local"] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            max-width: 200px;
+        }
+        select {
+            cursor: pointer;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: var(--primary-action-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button.danger {
+             background-color: var(--danger-action-bg);
+        }
 
-		.feature-item {
-			margin-bottom: 10px;
-		}
-
+		/* Quote */
 		.quote-section {
-			margin-top: 30px;
-			border-top: 1px solid #ddd;
-			padding-top: 20px;
 			font-style: italic;
-			color: #777;
+			color: var(--quote-color);
 			text-align: center;
-			transition: border-color 0.3s, color 0.3s;
+			transition: color 0.3s;
+            font-size: 1.05em;
 		}
 
+		/* Theme Toggle */
 		#theme-toggle {
 			position: fixed;
 			top: 10px;
 			right: 10px;
 			padding: 8px 12px;
-			background-color: #333;
-			color: white;
+			background-color: var(--button-bg);
+			color: var(--button-text);
 			border: none;
 			border-radius: 5px;
 			cursor: pointer;
 			z-index: 1000;
-			/* Ensure button is always on top */
+			transition: background-color 0.3s, color 0.3s;
 		}
 
+		/* Dark Mode */
 		.dark-mode {
-			background-color: #333;
-			color: #eee;
-		}
-
-		.dark-mode .container {
-			background-color: #444;
-			color: #eee;
-			box-shadow: 0 2px 5px rgba(255, 255, 255, 0.1);
-		}
-
-		.dark-mode .progress-bar {
-			background-color: #555;
-		}
-
-		.dark-mode .progress-fill {
-			background-color: #8BC34A;
-			/* Lighter Green for dark mode */
-		}
-
-		.dark-mode .stats-section,
-		.dark-mode .feature-section,
-		.dark-mode .quote-section {
-			border-top-color: #666;
-		}
-
-		/* New Feature Styles */
-		.time-zone-section,
-		.countdown-section,
-		.color-picker-section,
-		.session-timer-section,
-		.analog-clock-section {
-			margin-top: 30px;
-			border-top: 1px solid #ddd;
-			padding-top: 20px;
-			transition: border-color 0.3s;
-		}
-
-		.time-zone-section label,
-		.countdown-section label,
-		.color-picker-section label,
-		.session-timer-section label,
-		.analog-clock-section label {
-			display: block;
-			margin-bottom: 5px;
-			font-weight: bold;
+			--bg-color: #222;
+			--text-color: #eee;
+			--container-bg: #333;
+			--container-shadow: rgba(255, 255, 255, 0.08);
+			--heading-color: #ccc;
+			--progress-bg: #555;
+			--progress-text-color: white;
+			--border-color: #555;
+			--quote-color: #aaa;
+			--button-bg: #eee;
+			--button-text: #333;
+			--link-color: #64b5f6;
+            --input-border: #666;
+			--input-bg: #444;
+			--search-result-bg: #444;
+			--search-result-hover: #555;
+			--primary-action-bg: #64b5f6;
+            --danger-action-bg: #ef5350;
+            --analog-clock-border: #666;
+            --analog-clock-face: #444;
+            --analog-clock-hands: #eee;
+            --analog-clock-second-hand: #ff6b6b;
+            --feedback-bg: rgba(100, 181, 246, 0.8);
+            --feedback-text: #222;
+            --pulse-color: rgba(100, 181, 246, 0.3);
 		}
 
 		/* Timezone Search */
 		.timezone-search-container {
 			position: relative;
+            flex-grow: 1; /* Allow input to grow */
+            max-width: 300px; /* Limit growth */
 		}
-
 		#timezoneSearch {
-			width: calc(100% - 20px);
-			/* Adjust width for padding */
-			padding: 8px;
-			border-radius: 5px;
-			border: 1px solid #ccc;
-			margin-bottom: 5px;
+            width: 100%;
+            margin-bottom: 5px;
+            box-sizing: border-box; /* Include padding in width */
 		}
-
 		#timezoneSearchResults {
 			position: absolute;
-			top: 100%;
-			left: 0;
-			right: 0;
-			background-color: white;
-			border: 1px solid #ccc;
+			top: 100%; left: 0; right: 0;
+			background-color: var(--search-result-bg);
+			border: 1px solid var(--input-border);
 			border-top: none;
 			border-bottom-left-radius: 5px;
 			border-bottom-right-radius: 5px;
 			max-height: 200px;
 			overflow-y: auto;
-			z-index: 5;
-			display: none;
-			/* Hidden by default */
+			z-index: 500;
+			display: none; /* Hidden by default */
+            font-size: 0.9em;
 		}
-
 		#timezoneSearchResults div {
-			padding: 8px 10px;
+			padding: 8px 12px;
 			cursor: pointer;
 		}
-
 		#timezoneSearchResults div:hover {
-			background-color: #f0f0f0;
+			background-color: var(--search-result-hover);
 		}
 
-		.dark-mode #timezoneSearchResults {
-			background-color: #444;
-			border-color: #666;
-		}
-
-		.dark-mode #timezoneSearchResults div:hover {
-			background-color: #555;
-		}
-
-
-		#countdownTarget {
-			padding: 8px;
-			border-radius: 5px;
-			border: 1px solid #ccc;
-			margin-right: 10px;
-		}
-
+		/* Countdown */
+		.countdown-section { display: flex; flex-direction: column; gap: 10px; }
+        .countdown-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+		#countdownTarget { margin-right: 0; }
 		#countdownDisplay {
 			font-size: 1.2em;
 			font-weight: bold;
-			margin-top: 10px;
+            margin-top: 5px;
+            min-height: 1.5em; /* Prevent layout shift */
 		}
+		.countdown-progress-bar-container { margin-top: 5px; }
 
-		.countdown-progress-bar-container {
-			margin-top: 5px;
-		}
+        /* Pulse animation for timers */
+        @keyframes pulse {
+            0% { background-color: transparent; }
+            50% { background-color: var(--pulse-color); }
+            100% { background-color: transparent; }
+        }
+        .pulsing {
+            animation: pulse 1.5s infinite ease-in-out;
+        }
 
-
+		/* Color Picker */
+		.color-picker-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+            gap: 15px;
+        }
 		.color-picker-group {
 			display: flex;
 			gap: 10px;
 			align-items: center;
-			margin-bottom: 10px;
 		}
-
-		.color-picker-group label {
-			flex-shrink: 0;
-			/* Prevent label from shrinking */
-		}
-
+		.color-picker-group label { width: auto; flex-shrink: 0; }
 		.color-picker {
-			-webkit-appearance: none;
-			-moz-appearance: none;
-			appearance: none;
-			width: 40px;
-			height: 25px;
-			border: none;
-			border-radius: 3px;
-			cursor: pointer;
+			-webkit-appearance: none; -moz-appearance: none; appearance: none;
+			width: 40px; height: 25px; border: none; border-radius: 3px;
+			cursor: pointer; background-color: transparent; /* Remove default background */
+		}
+		.color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+		.color-picker::-webkit-color-swatch { border: 1px solid var(--input-border); border-radius: 3px; }
+		.color-picker::-moz-color-swatch { border: 1px solid var(--input-border); border-radius: 3px; }
+
+		/* Session Timer */
+		.session-timer-controls { margin-top: 10px; display: flex; gap: 8px; }
+		#sessionTimerDisplay { font-size: 1.3em; font-weight: bold; margin-top: 5px; }
+
+		/* Analog Clock */
+        .analog-clock-section { text-align: center; }
+		#analogClockCanvas {
+			border: 3px solid var(--analog-clock-border);
+			border-radius: 50%;
+			background-color: var(--analog-clock-face);
+			transition: border-color 0.3s, background-color 0.3s;
 		}
 
-		.color-picker::-webkit-color-swatch-wrapper {
-			padding: 0;
+        /* Feedback Message */
+        #feedback-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--feedback-bg);
+            color: var(--feedback-text);
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Allow clicks through */
+            font-size: 0.9em;
+        }
+        #feedback-message.show {
+            opacity: 1;
+        }
+
+        /* Offline Message */
+		.offline-message {
+			display: none; text-align: center; padding: 12px;
+            background-color: #ffc107; color: #333;
+            margin-top: 20px; border-radius: 5px;
+            font-weight: 500;
 		}
 
-		.color-picker::-webkit-color-swatch {
-			border: none;
-			border-radius: 3px;
-		}
+        /* Shortcuts Section */
+        .shortcuts-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .shortcuts-section li {
+            margin-bottom: 5px;
+        }
+        .shortcuts-section kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            font-family: monospace;
+            background-color: var(--progress-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            margin-right: 5px;
+        }
 
-		.color-picker::-moz-color-swatch-wrapper {
-			padding: 0;
-		}
+        /* Responsive */
+        @media (max-width: 650px) {
+            body { padding: 10px; }
+            .container { margin: 30px auto 10px auto; padding: 15px; }
+            h2 { font-size: 1.3em; }
+            .feature-item, .setting-item { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .feature-item label, .setting-item label { width: auto; margin-bottom: 3px; }
+            input[type="number"], input[type="text"], select, input[type="datetime-local"] { max-width: 100%; width: 100%; box-sizing: border-box;}
+            .timezone-search-container { max-width: none; width: 100%; }
+            #theme-toggle { padding: 6px 10px; font-size: 0.9em; }
+            .color-picker-section { grid-template-columns: 1fr; } /* Stack color pickers */
+            .countdown-controls { flex-direction: column; align-items: stretch; }
+            #countdownTarget { width: 100%; box-sizing: border-box;}
+            .stat-item span { min-width: 140px; }
+        }
 
-		.color-picker::-moz-color-swatch {
-			border: none;
-			border-radius: 3px;
-		}
-
-		/* Session Timer Styles */
-		.session-timer-controls button {
-			padding: 8px 12px;
-			margin-right: 5px;
-			border: none;
-			border-radius: 5px;
-			background-color: #007BFF;
-			color: white;
-			cursor: pointer;
-		}
-
-		.session-timer-controls button.stop {
-			background-color: #DC3545;
-		}
-
-		#sessionTimerDisplay {
-			font-size: 1.2em;
-			font-weight: bold;
-			margin-top: 10px;
-		}
-
-		/* Striped Progress Bar Styles */
-		.progress-fill.striped {
-			background-image: linear-gradient(45deg,
-					rgba(255, 255, 255, .15) 25%,
-					transparent 25%,
-					transparent 50%,
-					rgba(255, 255, 255, .15) 50%,
-					rgba(255, 255, 255, .15) 75%,
-					transparent 75%,
-					transparent);
-			background-size: 20px 20px;
-			/* Adjust for stripe width and height */
-		}
-
-		.progress-fill.animated-striped {
-			animation: progress-stripes 1s linear infinite;
-		}
-
-		@keyframes progress-stripes {
-			0% {
-				background-position: 20px 0;
-			}
-
-			/* Start position of stripes */
-			100% {
-				background-position: 0 0;
-			}
-
-			/* Move stripes to the left */
-		}
 	</style>
 </head>
 
 <body>
 
-	<button id="theme-toggle">Toggle Dark Mode</button>
+	<button id="theme-toggle" aria-label="Toggle Dark Mode">Toggle Dark Mode</button>
+    <div id="feedback-message">Settings Saved!</div>
 
-	<div class="container">
+    <div id="loading-indicator">Loading Dashboard...</div>
+
+	<div class="container hidden">
 		<h2>Time Progress Dashboard</h2>
 
+        <!-- Time Zone -->
 		<div class="time-zone-section">
 			<label for="timezoneSearch">Select Time Zone:</label>
 			<div class="timezone-search-container">
-				<input type="text" id="timezoneSearch" placeholder="Search time zone...">
+				<input type="text" id="timezoneSearch" placeholder="Search or type 'Local Time'..." autocomplete="off" aria-label="Time Zone Search">
 				<div id="timezoneSearchResults"></div>
 			</div>
 		</div>
 
-		<div class="progress-bar-container">
-			<span class="progress-label">Day Progress</span>
-			<div class="progress-bar" id="dayProgress">
-				<div class="progress-fill" id="dayProgressFill">
-					<span class="progress-text" id="dayProgressText">0%</span>
-				</div>
-			</div>
-		</div>
+        <!-- Progress Bars -->
+        <div class="progress-section">
+            <!-- Dynamically added header if needed, or keep static -->
+            <div class="progress-bar-container">
+                <span class="progress-label">Day Progress</span>
+                <div class="progress-bar" id="dayProgress">
+                    <div class="progress-fill" id="dayProgressFill"><span class="progress-text" id="dayProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Week Progress</span>
+                <div class="progress-bar" id="weekProgress">
+                    <div class="progress-fill" id="weekProgressFill"><span class="progress-text" id="weekProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Month Progress</span>
+                <div class="progress-bar" id="monthProgress">
+                    <div class="progress-fill" id="monthProgressFill"><span class="progress-text" id="monthProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Year Progress</span>
+                <div class="progress-bar" id="yearProgress">
+                    <div class="progress-fill" id="yearProgressFill"><span class="progress-text" id="yearProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Decade Progress</span>
+                <div class="progress-bar" id="decadeProgress">
+                    <div class="progress-fill" id="decadeProgressFill"><span class="progress-text" id="decadeProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Score (20 Years) Progress</span>
+                <div class="progress-bar" id="scoreProgress">
+                    <div class="progress-fill" id="scoreProgressFill"><span class="progress-text" id="scoreProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Century Progress</span>
+                <div class="progress-bar" id="centuryProgress">
+                    <div class="progress-fill" id="centuryProgressFill"><span class="progress-text" id="centuryProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <span class="progress-label">Time Left in Day</span>
+                <div class="progress-bar" id="timeLeftDayProgress">
+                    <div class="progress-fill" id="timeLeftDayProgressFill"><span class="progress-text" id="timeLeftDayProgressText" aria-live="polite">0%</span></div>
+                </div>
+            </div>
+        </div>
 
-		<div class="progress-bar-container">
-			<span class="progress-label">Week Progress</span>
-			<div class="progress-bar" id="weekProgress">
-				<div class="progress-fill" id="weekProgressFill">
-					<span class="progress-text" id="weekProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="progress-bar-container">
-			<span class="progress-label">Month Progress</span>
-			<div class="progress-bar" id="monthProgress">
-				<div class="progress-fill" id="monthProgressFill">
-					<span class="progress-text" id="monthProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="progress-bar-container">
-			<span class="progress-label">Year Progress</span>
-			<div class="progress-bar" id="yearProgress">
-				<div class="progress-fill" id="yearProgressFill">
-					<span class="progress-text" id="yearProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="progress-bar-container">
-			<span class="progress-label">Decade Progress</span>
-			<div class="progress-bar" id="decadeProgress">
-				<div class="progress-fill" id="decadeProgressFill">
-					<span class="progress-text" id="decadeProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="progress-bar-container">
-			<span class="progress-label">Score (20 Years) Progress</span>
-			<div class="progress-bar" id="scoreProgress">
-				<div class="progress-fill" id="scoreProgressFill">
-					<span class="progress-text" id="scoreProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="progress-bar-container">
-			<span class="progress-label">Century (100 Years) Progress</span>
-			<div class="progress-bar" id="centuryProgress">
-				<div class="progress-fill" id="centuryProgressFill">
-					<span class="progress-text" id="centuryProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-		<div class="progress-bar-container">
-			<span class="progress-label">Time Left in Day</span>
-			<div class="progress-bar" id="timeLeftDayProgress">
-				<div class="progress-fill" id="timeLeftDayProgressFill" style="background-color: orange;">
-					<span class="progress-text" id="timeLeftDayProgressText">0%</span>
-				</div>
-			</div>
-		</div>
-
-
+        <!-- Statistics -->
 		<div class="stats-section">
-			<h2>Various Statistics</h2>
-			<div class="stat-item" id="currentDate">Current Date: Loading...</div>
-			<div class="stat-item" id="currentTime">Current Time: Loading...</div>
-			<div class="stat-item" id="dayOfYear">Day of Year: Loading...</div>
-			<div class="stat-item" id="weekOfYear">Week of Year: Loading...</div>
-			<div class="stat-item" id="daysInMonth">Days in Current Month: Loading...</div>
-			<div class="stat-item" id="secondsPassedToday">Seconds Passed Today: Loading...</div>
-			<div class="stat-item" id="timeSpentOnSite">Time Spent on Site: Loading...</div>
+			<h2>Statistics</h2>
+			<div class="stat-item" id="currentDateTime" aria-live="polite"><span>Date & Time:</span> Loading...</div>
+			<div class="stat-item" id="dayOfYear" aria-live="polite"><span>Day of Year:</span> Loading...</div>
+			<div class="stat-item" id="weekOfYear" aria-live="polite"><span>Week of Year:</span> Loading...</div>
+			<div class="stat-item" id="daysInMonth" aria-live="polite"><span>Days in Month:</span> Loading...</div>
+            <div class="stat-item" id="secondsPassedToday" aria-live="polite"><span>Seconds Today:</span> Loading...</div>
+            <div class="stat-item" id="timeUntilEndDay" aria-live="polite"><span>Time Until End of Day:</span> Loading...</div>
+            <div class="stat-item" id="timeUntilWeekend" aria-live="polite"><span>Time Until Weekend:</span> Loading...</div>
+			<div class="stat-item" id="timeSpentOnSite" aria-live="polite"><span>Time on Site:</span> Loading...</div>
 		</div>
 
-
+        <!-- Countdown Timer -->
 		<div class="countdown-section">
-			<label for="countdownTarget">Countdown Timer:</label>
-			<input type="datetime-local" id="countdownTarget">
-			<div id="countdownDisplay">Set a target date and time.</div>
+            <h2>Countdown Timer</h2>
+            <div class="countdown-controls">
+                <label for="countdownTarget">Target Date/Time:</label>
+                <input type="datetime-local" id="countdownTarget" aria-label="Countdown Target Date and Time">
+            </div>
+			<div id="countdownDisplay" aria-live="polite">Set a target date and time.</div>
 			<div class="countdown-progress-bar-container">
 				<div class="progress-bar" id="countdownProgressBar">
-					<div class="progress-fill" id="countdownProgressFill" style="background-color: purple;">
-						<span class="progress-text" id="countdownProgressText">0%</span>
-					</div>
+					<div class="progress-fill" id="countdownProgressFill">
+                        <span class="progress-text" id="countdownProgressText" aria-live="polite">0%</span>
+                    </div>
 				</div>
 			</div>
 		</div>
 
-		<div class="color-picker-section">
-			<label>Customize Progress Bar Colors:</label>
-			<div class="color-picker-group">
-				<label for="dayColorPicker">Day:</label>
-				<input type="color" id="dayColorPicker" class="color-picker" value="#4CAF50">
+        <!-- Session Timer -->
+        <div class="session-timer-section">
+            <h2>Session / Focus Timer</h2>
+            <div id="sessionTimerDisplay" aria-live="polite">00:00:00</div>
+            <div class="session-timer-controls">
+                <button id="sessionStart" aria-label="Start Session Timer">Start</button>
+                <button id="sessionPause" aria-label="Pause Session Timer">Pause</button>
+                <button id="sessionReset" aria-label="Reset Session Timer" class="danger">Reset</button>
             </div>
-				<div class="color-picker-group">
-					<label for="weekColorPicker">Week:</label>
-					<input type="color" id="weekColorPicker" class="color-picker" value="#2196F3">
-            </div>
-					<div class="color-picker-group">
-						<label for="monthColorPicker">Month:</label>
-						<input type="color" id="monthColorPicker" class="color-picker" value="#FF9800">
-            </div>
-						<div class="color-picker-group">
-							<label for="yearColorPicker">Year:</label>
-							<input type="color" id="yearColorPicker" class="color-picker" value="#9C27B0">
-            </div>
-							<div class="color-picker-group">
-								<label for="decadeColorPicker">Decade:</label>
-								<input type="color" id="decadeColorPicker" class="color-picker" value="#E91E63">
-            </div>
-								<div class="color-picker-group">
-									<label for="scoreColorPicker">Score:</label>
-									<input type="color" id="scoreColorPicker" class="color-picker" value="#00BCD4">
-            </div>
-									<div class="color-picker-group">
-										<label for="centuryColorPicker">Century:</label>
-										<input type="color" id="centuryColorPicker" class="color-picker" value="#607D8B">
-            </div>
-										<div class="color-picker-group">
-											<label for="timeLeftDayColorPicker">Time Left Day:</label>
-											<input type="color" id="timeLeftDayColorPicker" class="color-picker" value="orange">
-            </div>
-											<div class="color-picker-group">
-												<label for="countdownColorPicker">Countdown:</label>
-												<input type="color" id="countdownColorPicker" class="color-picker" value="purple">
-            </div>
-											</div>
+        </div>
 
-											<div class="session-timer-section">
-												<label>Session Timer (Focus Timer):</label>
-												<div id="sessionTimerDisplay">00:00:00</div>
-												<div class="session-timer-controls">
-													<button id="sessionStart">Start</button>
-													<button id="sessionPause">Pause</button>
-													<button id="sessionReset">Reset</button>
-												</div>
-											</div>
+        <!-- Analog Clock -->
+        <div class="analog-clock-section">
+            <h2>Analog Clock</h2>
+            <canvas id="analogClockCanvas" width="150" height="150" aria-label="Analog Clock Display"></canvas>
+        </div>
 
-											<div class="analog-clock-section">
-												<label>Analog Clock:</label>
-												<div id="analogClockEmbed">
-													<!-- Analog clock embed will be placed here by JavaScript -->
-												</div>
-											</div>
-
-
-											<div class="feature-section">
-												<h2>Additional Features</h2>
-												<div class="feature-item">
-													<label for="updateInterval">Update Interval (seconds):</label>
-													<input type="number" id="updateInterval" value="1" min="1">
-													<button id="applyInterval">Apply</button>
-												</div>
-												<div class="feature-item">
-													<label>Progress Bar Style:</label>
-													<select id="progressBarVisualStyle">
+        <!-- Settings & Features -->
+		<div class="settings-section">
+			<h2>Settings & Customization</h2>
+            <div class="setting-item">
+                <label for="updateInterval">Update Interval (sec):</label>
+                <input type="number" id="updateInterval" value="1" min="0.5" step="0.1" aria-label="Update Interval in Seconds">
+                <button id="applyInterval">Apply</button>
+            </div>
+            <div class="setting-item">
+                <label for="percentagePrecision">Percentage Precision:</label>
+                <input type="number" id="percentagePrecision" value="2" min="0" max="6" step="1" aria-label="Decimal Places for Percentage">
+                <button id="applyPrecision">Apply</button>
+            </div>
+			<div class="setting-item">
+				<label for="progressBarVisualStyle">Progress Bar Style:</label>
+				<select id="progressBarVisualStyle" aria-label="Progress Bar Visual Style">
                     <option value="default">Default</option>
                     <option value="striped">Striped</option>
                     <option value="animated-striped">Animated Striped</option>
                 </select>
-												</div>
-											</div>
+			</div>
+             <div class="setting-item">
+                 <label for="resetSettings">Reset All Settings:</label>
+                <button id="resetSettings" class="danger">Reset to Defaults</button>
+             </div>
+		</div>
 
-											<div class="quote-section" id="dailyQuote">
-												"The future belongs to those who believe in the beauty of their dreams."
-												- Eleanor Roosevelt
-											</div>
+        <!-- Color Pickers -->
+        <div class="color-picker-section">
+            <h2>Customize Colors</h2>
+            <div class="color-picker-group">
+                <label for="dayColorPicker">Day:</label>
+                <input type="color" id="dayColorPicker" class="color-picker" value="#4CAF50" aria-label="Day Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="weekColorPicker">Week:</label>
+                <input type="color" id="weekColorPicker" class="color-picker" value="#2196F3" aria-label="Week Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="monthColorPicker">Month:</label>
+                <input type="color" id="monthColorPicker" class="color-picker" value="#FF9800" aria-label="Month Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="yearColorPicker">Year:</label>
+                <input type="color" id="yearColorPicker" class="color-picker" value="#9C27B0" aria-label="Year Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="decadeColorPicker">Decade:</label>
+                <input type="color" id="decadeColorPicker" class="color-picker" value="#E91E63" aria-label="Decade Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="scoreColorPicker">Score:</label>
+                <input type="color" id="scoreColorPicker" class="color-picker" value="#00BCD4" aria-label="Score Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="centuryColorPicker">Century:</label>
+                <input type="color" id="centuryColorPicker" class="color-picker" value="#607D8B" aria-label="Century Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="timeLeftDayColorPicker">Time Left Day:</label>
+                <input type="color" id="timeLeftDayColorPicker" class="color-picker" value="orange" aria-label="Time Left Day Progress Bar Color">
+            </div>
+            <div class="color-picker-group">
+                <label for="countdownColorPicker">Countdown:</label>
+                <input type="color" id="countdownColorPicker" class="color-picker" value="purple" aria-label="Countdown Progress Bar Color">
+            </div>
+		</div>
 
-											<div class="offline-message"
-												style="display: none; text-align: center; padding: 10px; background-color: #ddd; margin-top: 20px;">
-												You are currently offline. Some features may be limited.
-											</div>
+        <!-- Keyboard Shortcuts -->
+        <div class="shortcuts-section">
+            <h2>Keyboard Shortcuts</h2>
+            <ul>
+                <li><kbd>T</kbd> - Toggle Dark/Light Theme</li>
+                <li><kbd>S</kbd> - Start/Pause Session Timer</li>
+                <li><kbd>R</kbd> - Reset Session Timer</li>
+            </ul>
+        </div>
 
+        <!-- Quote -->
+		<div class="quote-section" id="dailyQuote" aria-live="polite">
+			"Loading quote..."
+		</div>
 
-										</div>
+        <!-- Offline Indicator -->
+		<div class="offline-message" id="offlineMessage">
+			You appear to be offline. Data is current as of the last connection.
+		</div>
 
-										<script>
-											// Service Worker for Offline Support
+	</div>
+
+	<script>
+        // --- Service Worker Registration (Inline using Data URI) ---
+        const swContent = `
+            const CACHE_NAME = 'time-progress-cache-v1';
+            const urlsToCache = [
+                '/', // Cache the root URL (which is this HTML file)
+                // Add other essential assets here if they existed (e.g., '/icon.png')
+            ];
+
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            // console.log('Opened cache');
+                            // Add the request for the root URL itself
+                            return cache.add(new Request('/', { mode: 'no-cors' }));
+                        })
+                );
+                self.skipWaiting(); // Force the waiting service worker to become the active service worker
+            });
+
+            self.addEventListener('activate', event => {
+              const cacheWhitelist = [CACHE_NAME];
+              event.waitUntil(
+                caches.keys().then(cacheNames => {
+                  return Promise.all(
+                    cacheNames.map(cacheName => {
+                      if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        // console.log('Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                      }
+                    })
+                  );
+                })
+              );
+               self.clients.claim(); // Take control of currently open clients
+            });
+
+            self.addEventListener('fetch', event => {
+                // We only handle navigation requests (HTML) for this simple example
+                // More complex strategies exist for caching other assets (CSS, JS, images)
+                 if (event.request.mode === 'navigate') {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                // Cache hit - return response
+                                if (response) {
+                                    return response;
+                                }
+
+                                // Clone the request because it's a stream and can only be consumed once.
+                                const fetchRequest = event.request.clone();
+
+                                return fetch(fetchRequest).then(
+                                    response => {
+                                        // Check if we received a valid response
+                                        if (!response || response.status !== 200 || response.type !== 'basic') {
+                                             // If fetch fails (offline), try to return the cached root page
+                                             return caches.match('/');
+                                        }
+
+                                        // Clone the response because it's a stream and can only be consumed once by cache and browser.
+                                        const responseToCache = response.clone();
+
+                                        caches.open(CACHE_NAME)
+                                            .then(cache => {
+                                                cache.put(event.request, responseToCache);
+                                            });
+
+                                        return response;
+                                    }
+                                ).catch(() => {
+                                     // Network request failed, try to return the cached root page
+                                    return caches.match('/');
+                                });
+                            })
+                    );
+                 }
+            });
+        `;
+
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js');
+            const swUrl = 'data:application/javascript,' + encodeURIComponent(swContent);
+            navigator.serviceWorker.register(swUrl)
+                .then(registration => {
+                    // console.log('Service Worker registered with scope:', registration.scope);
+                    registration.addEventListener('updatefound', () => {
+                        // A new service worker is installing
+                        const installingWorker = registration.installing;
+                        installingWorker.addEventListener('statechange', () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New content is available, prompt user to refresh
+                                console.log('New content is available; please refresh.');
+                                // You could show a notification bar here
+                                // showUpdateBar();
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
 
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
+             navigator.serviceWorker.addEventListener('controllerchange', () => {
+                // This fires when the service worker controlling this page changes,
+                // often due to skipWaiting() and clients.claim()
+                console.log('Controller changed. Reloading for latest version.');
                 window.location.reload();
             });
         }
 
-        const offlineMessage = document.querySelector('.offline-message');
-        window.addEventListener('offline', () => {
-            offlineMessage.style.display = 'block';
-        });
-        window.addEventListener('online', () => {
-            offlineMessage.style.display = 'none';
-        });
+        // --- Debounce Function ---
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
 
+        // --- DOM Elements ---
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const container = document.querySelector('.container');
+        const offlineMessage = document.getElementById('offlineMessage');
+        const feedbackMessage = document.getElementById('feedback-message');
 
-        const dayProgressFill = document.getElementById('dayProgressFill');
-        const dayProgressText = document.getElementById('dayProgressText');
-        const weekProgressFill = document.getElementById('weekProgressFill');
-        const weekProgressText = document.getElementById('weekProgressText');
-        const monthProgressFill = document.getElementById('monthProgressFill');
-        const monthProgressText = document.getElementById('monthProgressText');
-        const yearProgressFill = document.getElementById('yearProgressFill');
-        const yearProgressText = document.getElementById('yearProgressText');
-        const decadeProgressFill = document.getElementById('decadeProgressFill');
-        const decadeProgressText = document.getElementById('decadeProgressText');
-        const scoreProgressFill = document.getElementById('scoreProgressFill');
-        const scoreProgressText = document.getElementById('scoreProgressText');
-        const centuryProgressFill = document.getElementById('centuryProgressFill');
-        const centuryProgressText = document.getElementById('centuryProgressText');
-        const timeLeftDayProgressFill = document.getElementById('timeLeftDayProgressFill');
-        const timeLeftDayProgressText = document.getElementById('timeLeftDayProgressText');
-        const countdownProgressFill = document.getElementById('countdownProgressFill');
-        const countdownProgressText = document.getElementById('countdownProgressText');
+        // Progress Bars
+        const progressFills = {
+            day: document.getElementById('dayProgressFill'),
+            week: document.getElementById('weekProgressFill'),
+            month: document.getElementById('monthProgressFill'),
+            year: document.getElementById('yearProgressFill'),
+            decade: document.getElementById('decadeProgressFill'),
+            score: document.getElementById('scoreProgressFill'),
+            century: document.getElementById('centuryProgressFill'),
+            timeLeftDay: document.getElementById('timeLeftDayProgressFill'),
+            countdown: document.getElementById('countdownProgressFill')
+        };
+        const progressTexts = {
+            day: document.getElementById('dayProgressText'),
+            week: document.getElementById('weekProgressText'),
+            month: document.getElementById('monthProgressText'),
+            year: document.getElementById('yearProgressText'),
+            decade: document.getElementById('decadeProgressText'),
+            score: document.getElementById('scoreProgressText'),
+            century: document.getElementById('centuryProgressText'),
+            timeLeftDay: document.getElementById('timeLeftDayProgressText'),
+            countdown: document.getElementById('countdownProgressText')
+        };
         const countdownProgressBar = document.getElementById('countdownProgressBar');
 
-
-        const currentDateDisplay = document.getElementById('currentDate');
-        const currentTimeDisplay = document.getElementById('currentTime');
+        // Stats Displays
+        const currentDateTimeDisplay = document.getElementById('currentDateTime');
         const dayOfYearDisplay = document.getElementById('dayOfYear');
         const weekOfYearDisplay = document.getElementById('weekOfYear');
         const daysInMonthDisplay = document.getElementById('daysInMonth');
         const secondsPassedTodayDisplay = document.getElementById('secondsPassedToday');
+        const timeUntilEndDayDisplay = document.getElementById('timeUntilEndDay');
+        const timeUntilWeekendDisplay = document.getElementById('timeUntilWeekend');
         const timeSpentOnSiteDisplay = document.getElementById('timeSpentOnSite');
 
+        // Controls & Inputs
         const updateIntervalInput = document.getElementById('updateInterval');
         const applyIntervalButton = document.getElementById('applyInterval');
+        const percentagePrecisionInput = document.getElementById('percentagePrecision');
+        const applyPrecisionButton = document.getElementById('applyPrecision');
         const dailyQuoteDisplay = document.getElementById('dailyQuote');
         const themeToggle = document.getElementById('theme-toggle');
         const timezoneSearchInput = document.getElementById('timezoneSearch');
         const timezoneSearchResultsDiv = document.getElementById('timezoneSearchResults');
-
         const countdownTargetInput = document.getElementById('countdownTarget');
         const countdownDisplay = document.getElementById('countdownDisplay');
-
-        const dayColorPicker = document.getElementById('dayColorPicker');
-        const weekColorPicker = document.getElementById('weekColorPicker');
-        const monthColorPicker = document.getElementById('monthColorPicker');
-        const yearColorPicker = document.getElementById('yearColorPicker');
-        const decadeColorPicker = document.getElementById('decadeColorPicker');
-        const scoreColorPicker = document.getElementById('scoreColorPicker');
-        const centuryColorPicker = document.getElementById('centuryColorPicker');
-        const timeLeftDayColorPicker = document.getElementById('timeLeftDayColorPicker');
-        const countdownColorPicker = document.getElementById('countdownColorPicker');
         const progressBarVisualStyleSelect = document.getElementById('progressBarVisualStyle');
+        const resetSettingsButton = document.getElementById('resetSettings');
 
+        // Color Pickers
+        const colorPickers = {
+            day: document.getElementById('dayColorPicker'),
+            week: document.getElementById('weekColorPicker'),
+            month: document.getElementById('monthColorPicker'),
+            year: document.getElementById('yearColorPicker'),
+            decade: document.getElementById('decadeColorPicker'),
+            score: document.getElementById('scoreColorPicker'),
+            century: document.getElementById('centuryColorPicker'),
+            timeLeftDay: document.getElementById('timeLeftDayColorPicker'),
+            countdown: document.getElementById('countdownColorPicker')
+        };
+
+        // Session Timer
         const sessionTimerDisplay = document.getElementById('sessionTimerDisplay');
         const sessionStartButton = document.getElementById('sessionStart');
         const sessionPauseButton = document.getElementById('sessionPause');
         const sessionResetButton = document.getElementById('sessionReset');
-        const analogClockEmbedDiv = document.getElementById('analogClockEmbed');
 
+        // Analog Clock
+        const analogClockCanvas = document.getElementById('analogClockCanvas');
+        const analogClockCtx = analogClockCanvas.getContext('2d');
+        const clockRadius = analogClockCanvas.height / 2;
+        analogClockCtx.translate(clockRadius, clockRadius); // Move origin to center
 
-        let updateInterval = parseInt(updateIntervalInput.value, 10) * 1000; // Default 1 second
+        // --- Global State ---
+        const LS_PREFIX = 'timeDash_';
+        let updateInterval = 1000; // Default 1 second
+        let percentagePrecision = 2;
         let selectedTimeZone = 'local'; // Default to local time
         let countdownIntervalId = null;
+        let countdownTargetTime = null;
+        let countdownInitialTotalTime = null;
         let siteStartTime = Date.now(); // Record site start time
         let sessionTimerInterval = null;
         let sessionStartTime = 0;
         let sessionElapsedTime = 0;
         let sessionRunning = false;
         let timezonesData = []; // Will store fetched timezone data
+        let mainIntervalId = null;
+        let animationFrameId = null;
 
+        // --- Utility Functions ---
 
-        // Load Visual Preferences from localStorage
-        function loadVisualPreferences() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
+        // Format time difference (e.g., for countdowns, time until)
+        function formatTimeDifference(ms, showSeconds = true) {
+            if (ms <= 0) return "Now";
+            const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+            const days = Math.floor(totalSeconds / (3600 * 24));
+            const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            let parts = [];
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0 || days > 0) parts.push(`${hours}h`); // Show hours if days are shown
+            if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`); // Show minutes if hours/days shown
+            if (showSeconds && (minutes > 0 || hours > 0 || days > 0 || seconds > 0)) { // Show seconds unless it's exactly 0
+                 parts.push(`${seconds}s`);
+            } else if (!showSeconds && parts.length === 0) {
+                // If not showing seconds and everything else is 0, show "< 1m"
+                return "< 1m";
             }
 
-            const storedTimeZone = localStorage.getItem('timeZone');
+            return parts.join(' ') || (showSeconds ? "0s" : "< 1m");
+        }
+
+        // Show feedback message
+        let feedbackTimeout;
+        function showFeedback(message = "Settings Saved!") {
+            clearTimeout(feedbackTimeout);
+            feedbackMessage.textContent = message;
+            feedbackMessage.classList.add('show');
+            feedbackTimeout = setTimeout(() => {
+                feedbackMessage.classList.remove('show');
+            }, 2500); // Show for 2.5 seconds
+        }
+
+        // Safe localStorage access
+        function setLocalStorage(key, value) {
+            try {
+                localStorage.setItem(LS_PREFIX + key, value);
+            } catch (e) {
+                console.warn("LocalStorage is unavailable. Settings will not be saved.", e);
+                 showFeedback("Error: Could not save settings.");
+            }
+        }
+        function getLocalStorage(key) {
+            try {
+                return localStorage.getItem(LS_PREFIX + key);
+            } catch (e) {
+                console.warn("LocalStorage is unavailable.", e);
+                return null;
+            }
+        }
+         function removeLocalStorage(key) {
+            try {
+                localStorage.removeItem(LS_PREFIX + key);
+            } catch (e) {
+                console.warn("LocalStorage is unavailable.", e);
+            }
+        }
+
+
+        // --- Time Zone & Date Calculation Functions ---
+
+        // Get a Date object adjusted for the selected timezone offset
+        // IMPORTANT: This doesn't *change* the underlying timestamp, just helps get local components
+        // Use Intl.DateTimeFormat for formatting, which handles DST correctly.
+        function getAdjustedDate(date = new Date()) {
+             // Using the date object directly is usually fine for calculations
+             // based on its internal UTC timestamp. Formatting is where TZ matters most.
+             return date;
+        }
+
+        function getFormatOptions(includeTime = true, includeDate = true) {
+            const options = { timeZone: selectedTimeZone === 'local' ? undefined : selectedTimeZone };
+            if (includeDate) {
+                options.year = 'numeric';
+                options.month = 'short'; // 'numeric', '2-digit', 'long', 'short', 'narrow'
+                options.day = 'numeric'; // 'numeric', '2-digit'
+            }
+             if (includeTime) {
+                 options.hour = 'numeric'; // 'numeric', '2-digit'
+                 options.minute = 'numeric'; // 'numeric', '2-digit'
+                 options.second = 'numeric'; // 'numeric', '2-digit'
+                 options.hour12 = false; // Use 24-hour clock for consistency
+             }
+            return options;
+        }
+
+        function getFormattedDateTime(date = new Date()) {
+             try {
+                return new Intl.DateTimeFormat('en-US', getFormatOptions()).format(date);
+             } catch (e) {
+                 console.error("Error formatting date/time:", e);
+                 // Fallback for invalid timezone string
+                 selectedTimeZone = 'local'; // Reset to local
+                 updateTimezoneDisplay();
+                 saveVisualPreferences();
+                 return new Intl.DateTimeFormat('en-US', getFormatOptions(true, true)).format(date); // Retry with local
+             }
+        }
+
+        function getFormattedTime(date = new Date()) {
+            try {
+                return new Intl.DateTimeFormat('en-US', getFormatOptions(true, false)).format(date);
+            } catch (e) {
+                 console.error("Error formatting time:", e);
+                 selectedTimeZone = 'local'; updateTimezoneDisplay(); saveVisualPreferences();
+                 return new Intl.DateTimeFormat('en-US', getFormatOptions(true, false)).format(date);
+            }
+        }
+
+        function getFormattedDate(date = new Date()) {
+             try {
+                return new Intl.DateTimeFormat('en-US', getFormatOptions(false, true)).format(date);
+            } catch (e) {
+                 console.error("Error formatting date:", e);
+                 selectedTimeZone = 'local'; updateTimezoneDisplay(); saveVisualPreferences();
+                 return new Intl.DateTimeFormat('en-US', getFormatOptions(false, true)).format(date);
+            }
+        }
+
+        // Helper to get specific parts using Intl.DateTimeFormat
+        function getDatePart(part, date = new Date()) {
+            try {
+                const formatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone: selectedTimeZone === 'local' ? undefined : selectedTimeZone,
+                    [part]: 'numeric' // e.g., 'year', 'month', 'day', 'hour', 'minute', 'second'
+                });
+                return parseInt(formatter.format(date), 10);
+            } catch (e) {
+                 console.error(`Error getting date part "${part}":`, e);
+                 selectedTimeZone = 'local'; updateTimezoneDisplay(); saveVisualPreferences();
+                 const formatter = new Intl.DateTimeFormat('en-US', { [part]: 'numeric' }); // Retry local
+                 return parseInt(formatter.format(date), 10);
+            }
+        }
+        function getDayOfWeek(date = new Date()) { // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+             try {
+                // Use a locale where Sunday is reliably 0 (like 'en-US') and get weekday index
+                const formatter = new Intl.DateTimeFormat('en-US', { timeZone: selectedTimeZone === 'local' ? undefined : selectedTimeZone, weekday: 'short' });
+                const parts = formatter.formatToParts(date);
+                const weekdayPart = parts.find(p => p.type === 'weekday');
+                const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                return weekdays.indexOf(weekdayPart.value);
+             } catch (e) {
+                 console.error("Error getting day of week:", e);
+                 selectedTimeZone = 'local'; updateTimezoneDisplay(); saveVisualPreferences();
+                 return date.getDay(); // Fallback to browser's local interpretation
+             }
+        }
+
+
+        function getDaysInMonth(date = new Date()) {
+            const year = getDatePart('year', date);
+            const month = getDatePart('month', date); // 1-based month
+            // Day 0 of the *next* month gives the last day of the current month
+            // Need to use UTC to avoid timezone shifts when creating the date
+             try {
+                return new Date(Date.UTC(year, month, 0)).getUTCDate();
+            } catch (e) { // Handle potential errors with year/month values
+                return new Date(year, month, 0).getDate(); // Fallback
+            }
+        }
+
+        function isLeapYear(date = new Date()) {
+            const year = getDatePart('year', date);
+             try {
+                return new Date(Date.UTC(year, 1, 29)).getUTCMonth() === 1; // Check if Feb 29 exists in UTC
+            } catch (e) {
+                 return new Date(year, 1, 29).getDate() === 29; // Fallback
+            }
+        }
+
+        function getDayOfYear(date = new Date()) {
+             try {
+                const year = getDatePart('year', date);
+                // Create dates in UTC to avoid DST shifts affecting the difference calculation
+                const startOfYear = Date.UTC(year, 0, 1); // Month is 0-indexed for Date constructor
+                // Adjust the current date to midnight UTC in its timezone
+                const currentYear = getDatePart('year', date);
+                const currentMonth = getDatePart('month', date) -1; // 0-indexed
+                const currentDay = getDatePart('day', date);
+                const currentDateAtMidnight = Date.UTC(currentYear, currentMonth, currentDay);
+
+                const diff = currentDateAtMidnight - startOfYear;
+                const oneDay = 1000 * 60 * 60 * 24;
+                return Math.floor(diff / oneDay) + 1; // +1 because Jan 1st is day 1
+            } catch (e) {
+                 console.error("Error getting day of year:", e);
+                 // Simpler fallback
+                 const start = new Date(date.getFullYear(), 0, 0);
+                 const diff = date - start;
+                 const oneDay = 1000 * 60 * 60 * 24;
+                 return Math.floor(diff / oneDay);
+            }
+        }
+
+
+        function getWeekOfYear(date = new Date()) {
+            // ISO 8601 week date system: Week starts on Monday. Week 1 contains the first Thursday of the year.
+            try {
+                 const target = getAdjustedDate(date);
+                 const dayNr = (getDayOfWeek(target) + 6) % 7; // Monday is 0, Sunday is 6
+                 target.setDate(target.getDate() - dayNr + 3); // Set to nearest Thursday
+                 const firstThursday = new Date(target.getFullYear(), 0, 4); // First Thursday of year
+                 firstThursday.setDate(firstThursday.getDate() - (getDayOfWeek(firstThursday) + 6) % 7); // Adjust to Monday of week 1
+                 return 1 + Math.ceil((target - firstThursday) / 604800000); // 604800000 = 7 * 24 * 3600 * 1000
+            } catch (e) {
+                 console.error("Error getting week of year:", e);
+                 // Fallback (less accurate, depends on browser locale)
+                 const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                 const dayNum = d.getUTCDay() || 7;
+                 d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+                 const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                 return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            }
+        }
+
+        function getSecondsPassedToday(date = new Date()) {
+            try {
+                 return getDatePart('hour', date) * 3600 + getDatePart('minute', date) * 60 + getDatePart('second', date);
+            } catch (e) {
+                 console.error("Error getting seconds passed today:", e);
+                 return date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds(); // Fallback
+            }
+        }
+
+        // --- Update Functions ---
+
+        function updateProgressBar(type, percentage) {
+            const fill = progressFills[type];
+            const text = progressTexts[type];
+            if (fill && text) {
+                const displayPercentage = Math.max(0, Math.min(100, percentage)); // Clamp between 0 and 100
+                fill.style.width = `${displayPercentage}%`;
+                text.textContent = `${displayPercentage.toFixed(percentagePrecision)}%`;
+            } else {
+                console.warn(`Progress bar elements not found for type: ${type}`);
+            }
+        }
+
+        function updateAllProgressBars(now) {
+            const currentYear = getDatePart('year', now);
+            const dayOfMonth = getDatePart('day', now);
+            const dayOfWeekIndex = getDayOfWeek(now); // 0=Sun, 6=Sat
+
+            // Day Progress
+            const secondsInDay = 86400; // 24 * 60 * 60
+            const secondsPassed = getSecondsPassedToday(now);
+            updateProgressBar('day', (secondsPassed / secondsInDay) * 100);
+
+            // Week Progress (Starts Sunday=0)
+            // Progress = (days passed + fraction of current day) / 7
+            const weekProgress = ((dayOfWeekIndex + secondsPassed / secondsInDay) / 7) * 100;
+            updateProgressBar('week', weekProgress);
+
+            // Month Progress
+            const daysInMonthVal = getDaysInMonth(now);
+            // Progress = (days passed + fraction of current day) / total days
+            const monthProgress = ((dayOfMonth - 1 + secondsPassed / secondsInDay) / daysInMonthVal) * 100;
+            updateProgressBar('month', monthProgress);
+            daysInMonthDisplay.innerHTML = `<span>Days in Month:</span> ${daysInMonthVal}`; // Use innerHTML to include span
+
+            // Year Progress
+            const dayOfYearVal = getDayOfYear(now);
+            const leap = isLeapYear(now);
+            const daysInYear = leap ? 366 : 365;
+            // Progress = (days passed + fraction of current day) / total days
+            const yearProgress = ((dayOfYearVal - 1 + secondsPassed / secondsInDay) / daysInYear) * 100;
+            updateProgressBar('year', yearProgress);
+            dayOfYearDisplay.innerHTML = `<span>Day of Year:</span> ${dayOfYearVal} / ${daysInYear} (${leap ? 'Leap' : 'Normal'})`;
+
+            // Decade Progress
+            const startOfDecade = Math.floor(currentYear / 10) * 10;
+            const yearInDecade = currentYear - startOfDecade;
+            const fractionOfYear = (dayOfYearVal - 1 + secondsPassed / secondsInDay) / daysInYear;
+            const decadeProgress = ((yearInDecade + fractionOfYear) / 10) * 100;
+            updateProgressBar('decade', decadeProgress);
+
+            // Score (20 Years) Progress
+            const startOfScorePeriod = Math.floor(currentYear / 20) * 20;
+            const yearInScorePeriod = currentYear - startOfScorePeriod;
+            const scoreProgress = ((yearInScorePeriod + fractionOfYear) / 20) * 100;
+            updateProgressBar('score', scoreProgress);
+
+            // Century (100 Years) Progress
+            const startOfCentury = Math.floor(currentYear / 100) * 100;
+            const yearInCentury = currentYear - startOfCentury;
+            const centuryProgress = ((yearInCentury + fractionOfYear) / 100) * 100;
+            updateProgressBar('century', centuryProgress);
+
+            // Time Left in Day Progress
+            updateProgressBar('timeLeftDay', 100 - (secondsPassed / secondsInDay) * 100);
+        }
+
+        function updateStats(now) {
+            currentDateTimeDisplay.innerHTML = `<span>Date & Time:</span> ${getFormattedDateTime(now)}`;
+            weekOfYearDisplay.innerHTML = `<span>Week of Year:</span> ${getWeekOfYear(now)}`;
+            secondsPassedTodayDisplay.innerHTML = `<span>Seconds Today:</span> ${getSecondsPassedToday(now)}`;
+            timeSpentOnSiteDisplay.innerHTML = `<span>Time on Site:</span> ${getTimeSpentOnSite()}`;
+
+             // Time until end of day
+            const secondsInDay = 86400;
+            const secondsPassed = getSecondsPassedToday(now);
+            const msUntilEndDay = (secondsInDay - secondsPassed) * 1000;
+            timeUntilEndDayDisplay.innerHTML = `<span>Until End of Day:</span> ${formatTimeDifference(msUntilEndDay)}`;
+
+            // Time until weekend (assuming weekend starts Saturday 00:00)
+            const dayOfWeekIndex = getDayOfWeek(now); // 0=Sun, 6=Sat
+            let daysUntilSaturday = (6 - dayOfWeekIndex + 7) % 7; // Days until next Saturday (0 if today is Sat)
+             if (daysUntilSaturday === 0 && secondsPassed > 0) { // If it's Saturday, calculate until *next* Saturday
+                 daysUntilSaturday = 7;
+             }
+            const msUntilWeekend = (daysUntilSaturday * secondsInDay - secondsPassed) * 1000;
+            timeUntilWeekendDisplay.innerHTML = `<span>Until Weekend:</span> ${msUntilWeekend > 0 ? formatTimeDifference(msUntilWeekend, false) : 'It\'s the weekend!'}`;
+        }
+
+        function getTimeSpentOnSite() {
+            const elapsedTimeMs = Date.now() - siteStartTime;
+            return formatTimeDifference(elapsedTimeMs);
+        }
+
+        function updateQuote() {
+            const quotes = [
+                "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
+                "The best time to plant a tree was 20 years ago. The second best time is now. - Chinese Proverb",
+                "Time you enjoy wasting is not wasted time. - Marthe Troly-Curtin", // Often misattributed to Lennon
+                "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
+                "Lost time is never found again. - Benjamin Franklin",
+                "The two most powerful warriors are patience and time. - Leo Tolstoy",
+                "Time is what we want most, but what we use worst. - William Penn",
+                "Yesterday is gone. Tomorrow has not yet come. We have only today. Let us begin. - Mother Teresa",
+                "Time flies like an arrow; fruit flies like a banana. - Anthony G. Oettinger",
+                "Your time is limited, don't waste it living someone else's life. - Steve Jobs"
+            ];
+            // Poor man's daily quote: use day of year to pick
+            const dayIndex = getDayOfYear() % quotes.length;
+            dailyQuoteDisplay.textContent = `"${quotes[dayIndex]}"`;
+        }
+
+        // --- Analog Clock Drawing ---
+        function drawClockFace() {
+            // Draw white face
+            analogClockCtx.beginPath();
+            analogClockCtx.arc(0, 0, clockRadius * 0.95, 0, 2 * Math.PI);
+            analogClockCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-face').trim();
+            analogClockCtx.fill();
+
+            // Draw edge
+             analogClockCtx.lineWidth = clockRadius * 0.05;
+             analogClockCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-border').trim();
+             analogClockCtx.stroke();
+
+
+            // Draw center pin
+            analogClockCtx.beginPath();
+            analogClockCtx.arc(0, 0, clockRadius * 0.05, 0, 2 * Math.PI);
+            analogClockCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-hands').trim();
+            analogClockCtx.fill();
+
+             // Draw hour markers
+             analogClockCtx.lineWidth = clockRadius * 0.03;
+             analogClockCtx.lineCap = "round";
+             analogClockCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-hands').trim();
+             for (let i = 0; i < 12; i++) {
+                 const angle = (i * Math.PI / 6);
+                 analogClockCtx.rotate(angle);
+                 analogClockCtx.translate(0, -clockRadius * 0.85);
+                 analogClockCtx.beginPath();
+                 analogClockCtx.moveTo(0, 0);
+                 analogClockCtx.lineTo(0, clockRadius * 0.08); // Length of marker
+                 analogClockCtx.stroke();
+                 analogClockCtx.translate(0, clockRadius * 0.85);
+                 analogClockCtx.rotate(-angle);
+             }
+        }
+
+        function drawHand(pos, length, width, color) {
+            analogClockCtx.beginPath();
+            analogClockCtx.lineWidth = width;
+            analogClockCtx.lineCap = "round";
+            analogClockCtx.strokeStyle = color;
+            analogClockCtx.moveTo(0, 0);
+            analogClockCtx.rotate(pos);
+            analogClockCtx.lineTo(0, -length);
+            analogClockCtx.stroke();
+            analogClockCtx.rotate(-pos);
+        }
+
+        function drawAnalogClock(now) {
+            analogClockCtx.clearRect(-clockRadius, -clockRadius, analogClockCanvas.width, analogClockCanvas.height); // Clear canvas
+            drawClockFace();
+
+            // Get time components using the selected timezone
+            const hour = getDatePart('hour', now);
+            const minute = getDatePart('minute', now);
+            const second = getDatePart('second', now);
+
+             // Hour hand
+             let hourAngle = (hour % 12 + minute / 60 + second / 3600) * (Math.PI / 6);
+             drawHand(hourAngle, clockRadius * 0.5, clockRadius * 0.07, getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-hands').trim());
+
+             // Minute hand
+             let minuteAngle = (minute + second / 60) * (Math.PI / 30);
+             drawHand(minuteAngle, clockRadius * 0.75, clockRadius * 0.05, getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-hands').trim());
+
+             // Second hand
+             let secondAngle = second * (Math.PI / 30);
+             drawHand(secondAngle, clockRadius * 0.85, clockRadius * 0.02, getComputedStyle(document.documentElement).getPropertyValue('--analog-clock-second-hand').trim());
+        }
+
+
+        // --- Countdown Timer Logic ---
+        function updateCountdown() {
+            if (!countdownTargetTime) return;
+
+            const nowMs = Date.now();
+            const timeLeft = countdownTargetTime - nowMs;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownIntervalId);
+                countdownIntervalId = null;
+                countdownDisplay.textContent = 'Countdown Finished!';
+                updateProgressBar('countdown', 100);
+                countdownProgressBar.classList.remove('pulsing'); // Stop pulse
+                return;
+            }
+
+            countdownDisplay.textContent = `Remaining: ${formatTimeDifference(timeLeft)} (Total: ${formatTimeDifference(countdownInitialTotalTime)})`;
+
+            const elapsed = countdownInitialTotalTime - timeLeft;
+            const percentage = (elapsed / countdownInitialTotalTime) * 100;
+            updateProgressBar('countdown', percentage);
+
+            // Add pulsing effect when nearing end (e.g., last 10% or last minute)
+            if (timeLeft < 60000 || percentage > 90) {
+                 if (!countdownProgressBar.classList.contains('pulsing')) {
+                     countdownProgressBar.classList.add('pulsing');
+                 }
+             } else {
+                 countdownProgressBar.classList.remove('pulsing');
+             }
+        }
+
+        function startCountdown() {
+             clearInterval(countdownIntervalId);
+             countdownTargetTime = null; // Reset target time
+             countdownInitialTotalTime = null; // Reset total time
+
+             try {
+                const targetDate = new Date(countdownTargetInput.value);
+                if (isNaN(targetDate.getTime())) { // Check if valid date
+                    countdownDisplay.textContent = 'Invalid date/time format.';
+                    updateProgressBar('countdown', 0);
+                     countdownProgressBar.classList.remove('pulsing');
+                    return;
+                }
+                countdownTargetTime = targetDate.getTime();
+            } catch (e) {
+                 countdownDisplay.textContent = 'Error parsing date/time.';
+                 updateProgressBar('countdown', 0);
+                 countdownProgressBar.classList.remove('pulsing');
+                 return;
+             }
+
+
+            const nowMs = Date.now();
+            countdownInitialTotalTime = countdownTargetTime - nowMs; // Calculate initial total duration
+
+             if (countdownInitialTotalTime <= 0) {
+                 countdownDisplay.textContent = 'Target time is in the past.';
+                 updateProgressBar('countdown', 100); // Show as completed if in past
+                 countdownProgressBar.classList.remove('pulsing');
+                 return;
+             }
+
+            updateCountdown(); // Initial update
+            countdownIntervalId = setInterval(updateCountdown, 1000); // Update every second
+        }
+
+
+        // --- Session Timer Logic ---
+        function updateSessionTimerDisplay() {
+            const totalSeconds = Math.floor(sessionElapsedTime / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            sessionTimerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function runSessionTimer() {
+            if (!sessionRunning) return;
+            sessionElapsedTime = Date.now() - sessionStartTime;
+            updateSessionTimerDisplay();
+        }
+
+        function startSession() {
+            if (!sessionRunning) {
+                sessionRunning = true;
+                sessionStartTime = Date.now() - sessionElapsedTime; // Adjust start time based on previous elapsed time
+                clearInterval(sessionTimerInterval); // Clear any existing interval
+                sessionTimerInterval = setInterval(runSessionTimer, 50); // Update display frequently for smoothness
+                sessionStartButton.textContent = 'Running...';
+                sessionPauseButton.textContent = 'Pause';
+                 sessionTimerDisplay.classList.add('pulsing');
+            }
+        }
+
+        function pauseSession() {
+            if (sessionRunning) {
+                sessionRunning = false;
+                clearInterval(sessionTimerInterval);
+                sessionElapsedTime = Date.now() - sessionStartTime; // Capture final elapsed time before pausing
+                updateSessionTimerDisplay(); // Ensure final display is accurate
+                sessionStartButton.textContent = 'Resume';
+                sessionPauseButton.textContent = 'Paused';
+                sessionTimerDisplay.classList.remove('pulsing');
+            }
+        }
+
+        function resetSession() {
+            sessionRunning = false;
+            clearInterval(sessionTimerInterval);
+            sessionStartTime = 0;
+            sessionElapsedTime = 0;
+            updateSessionTimerDisplay(); // Reset display to 00:00:00
+            sessionStartButton.textContent = 'Start';
+            sessionPauseButton.textContent = 'Pause';
+            sessionTimerDisplay.classList.remove('pulsing');
+        }
+
+        // --- Preferences & Settings ---
+
+        function loadVisualPreferences() {
+            // Theme
+            const theme = getLocalStorage('theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                 document.body.classList.remove('dark-mode'); // Ensure light if not dark or not set
+            }
+
+            // TimeZone
+            const storedTimeZone = getLocalStorage('timeZone');
             if (storedTimeZone) {
                 selectedTimeZone = storedTimeZone;
             }
+            updateTimezoneDisplay(); // Update input field based on loaded/default timezone
 
-            dayColorPicker.value = localStorage.getItem('dayColor') || '#4CAF50';
-            weekColorPicker.value = localStorage.getItem('weekColor') || '#2196F3';
-            monthColorPicker.value = localStorage.getItem('monthColor') || '#FF9800';
-            yearColorPicker.value = localStorage.getItem('yearColor') || '#9C27B0';
-            decadeColorPicker.value = localStorage.getItem('decadeColor') || '#E91E63';
-            scoreColorPicker.value = localStorage.getItem('scoreColor') || '#00BCD4';
-            centuryColorPicker.value = localStorage.getItem('centuryColor') || '#607D8B';
-            timeLeftDayColorPicker.value = localStorage.getItem('timeLeftDayColor') || 'orange';
-            countdownColorPicker.value = localStorage.getItem('countdownColor') || 'purple';
-
-            progressBarVisualStyleSelect.value = localStorage.getItem('progressBarVisualStyle') || 'default';
-
-            // Apply loaded preferences
+            // Colors
+            for (const key in colorPickers) {
+                const savedColor = getLocalStorage(`${key}Color`);
+                if (savedColor) {
+                    colorPickers[key].value = savedColor;
+                } else {
+                    // Use default value from HTML if nothing saved
+                    colorPickers[key].value = colorPickers[key].defaultValue;
+                }
+            }
             applyColorPreferences();
+
+            // Progress Bar Style
+            const storedStyle = getLocalStorage('progressBarVisualStyle');
+             if (storedStyle) {
+                progressBarVisualStyleSelect.value = storedStyle;
+            } else {
+                 progressBarVisualStyleSelect.value = progressBarVisualStyleSelect.defaultValue;
+             }
             applyVisualStylePreference();
+
+             // Update Interval
+            const storedInterval = getLocalStorage('updateInterval');
+            if (storedInterval) {
+                const intervalSeconds = parseFloat(storedInterval) / 1000;
+                updateIntervalInput.value = intervalSeconds;
+                 setUpdateInterval(intervalSeconds); // Apply the loaded interval
+            } else {
+                 setUpdateInterval(parseFloat(updateIntervalInput.defaultValue)); // Apply default
+            }
+
+            // Percentage Precision
+             const storedPrecision = getLocalStorage('percentagePrecision');
+             if (storedPrecision) {
+                const precisionVal = parseInt(storedPrecision, 10);
+                 percentagePrecisionInput.value = precisionVal;
+                 applyPrecisionSetting(precisionVal); // Apply loaded precision
+             } else {
+                  applyPrecisionSetting(parseInt(percentagePrecisionInput.defaultValue, 10)); // Apply default
+             }
         }
 
-        function saveVisualPreferences() {
-            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-            localStorage.setItem('timeZone', selectedTimeZone);
-
-            localStorage.setItem('dayColor', dayColorPicker.value);
-            localStorage.setItem('weekColor', weekColorPicker.value);
-            localStorage.setItem('monthColor', monthColorPicker.value);
-            localStorage.setItem('yearColor', yearColorPicker.value);
-            localStorage.setItem('decadeColor', decadeColorPicker.value);
-            localStorage.setItem('scoreColor', scoreColorPicker.value);
-            localStorage.setItem('centuryColor', centuryColorPicker.value);
-            localStorage.setItem('timeLeftDayColor', timeLeftDayColorPicker.value);
-            localStorage.setItem('countdownColor', countdownColorPicker.value);
-            localStorage.setItem('progressBarVisualStyle', progressBarVisualStyleSelect.value);
-
-        }
+        const saveVisualPreferences = debounce(() => {
+            try {
+                setLocalStorage('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+                setLocalStorage('timeZone', selectedTimeZone);
+                for (const key in colorPickers) {
+                    setLocalStorage(`${key}Color`, colorPickers[key].value);
+                }
+                setLocalStorage('progressBarVisualStyle', progressBarVisualStyleSelect.value);
+                setLocalStorage('updateInterval', updateInterval);
+                setLocalStorage('percentagePrecision', percentagePrecision);
+                 // Don't show feedback for every minor color change during drag
+                 // showFeedback(); // Maybe only show on significant changes or button clicks
+            } catch (e) {
+                // Warning already shown in setLocalStorage
+            }
+        }, 500); // Debounce saving by 500ms
 
         function applyColorPreferences() {
-            dayProgressFill.style.backgroundColor = dayColorPicker.value;
-            weekProgressFill.style.backgroundColor = weekColorPicker.value;
-            monthProgressFill.style.backgroundColor = monthColorPicker.value;
-            yearProgressFill.style.backgroundColor = yearColorPicker.value;
-            decadeProgressFill.style.backgroundColor = decadeColorPicker.value;
-            scoreProgressFill.style.backgroundColor = scoreColorPicker.value;
-            centuryProgressFill.style.backgroundColor = centuryColorPicker.value;
-            timeLeftDayProgressFill.style.backgroundColor = timeLeftDayColorPicker.value;
-            countdownProgressFill.style.backgroundColor = countdownColorPicker.value;
+            for (const key in colorPickers) {
+                 if (progressFills[key]) {
+                     progressFills[key].style.backgroundColor = colorPickers[key].value;
+                 }
+             }
         }
 
         function applyVisualStylePreference() {
             const style = progressBarVisualStyleSelect.value;
-            const progressFills = document.querySelectorAll('.progress-fill');
-            progressFills.forEach(fill => {
+            const allProgressFills = document.querySelectorAll('.progress-fill');
+            allProgressFills.forEach(fill => {
                 fill.classList.remove('striped', 'animated-striped');
                 if (style === 'striped') {
                     fill.classList.add('striped');
@@ -688,347 +1469,364 @@
             });
         }
 
+        function setUpdateInterval(seconds) {
+             const newInterval = Math.max(0.1, seconds) * 1000; // Minimum 100ms
+             if (newInterval !== updateInterval) {
+                 updateInterval = newInterval;
+                 clearInterval(mainIntervalId);
+                 cancelAnimationFrame(animationFrameId); // Stop existing animation loop
+                 mainLoop(); // Restart the loop with new interval
+                 setLocalStorage('updateInterval', updateInterval); // Save immediately
+                 showFeedback(`Update interval set to ${seconds}s`);
+             }
+         }
 
-        function updateProgressBars() {
-            const now = new Date();
-            const timeZone = selectedTimeZone === 'local' ? undefined : selectedTimeZone;
-
-            // Day Progress
-            let secondsInDay = 24 * 60 * 60;
-            let secondsPassed = getSecondsPassedToday(now, timeZone);
-            let dayProgress = (secondsPassed / secondsInDay) * 100;
-            dayProgressFill.style.width = `${dayProgress}%`;
-            dayProgressText.textContent = `${dayProgress.toFixed(2)}%`;
-
-            // Week Progress
-            let dayOfWeek = getDayOfWeek(now, timeZone);
-            let weekProgress = (dayOfWeek / 7) * 100;
-            weekProgressFill.style.width = `${weekProgress}%`;
-            weekProgressText.textContent = `${weekProgress.toFixed(2)}%`;
-
-            // Month Progress
-            let dayOfMonth = getDayOfMonth(now, timeZone);
-            let daysInMonth = getDaysInMonth(now, timeZone);
-            let monthProgress = (dayOfMonth / daysInMonth) * 100;
-            monthProgressFill.style.width = `${monthProgress}%`;
-            monthProgressText.textContent = `${monthProgress.toFixed(2)}%`;
-            daysInMonthDisplay.textContent = `Days in Current Month: ${daysInMonth}`;
-
-            // Year Progress
-            let dayOfYear = getDayOfYear(now, timeZone);
-            let isLeap = isLeapYear(now, timeZone);
-            let daysInYear = isLeap ? 366 : 365;
-            let yearProgress = (dayOfYear / daysInYear) * 100;
-            yearProgressFill.style.width = `${yearProgress}%`;
-            yearProgressText.textContent = `${yearProgress.toFixed(2)}%`;
-            dayOfYearDisplay.textContent = `Day of Year: ${dayOfYear} / ${daysInYear} (${isLeap ? 'Leap Year' : 'Normal Year'})`;
-
-            // Decade Progress
-            let currentYear = getFullYear(now, timeZone);
-            let startOfDecade = Math.floor(currentYear / 10) * 10;
-            let yearInDecade = currentYear - startOfDecade;
-            let decadeProgress = (yearInDecade / 10) * 100;
-            decadeProgressFill.style.width = `${decadeProgress}%`;
-            decadeProgressText.textContent = `${decadeProgress.toFixed(2)}%`;
-
-            // Score (20 Years) Progress
-            let startOfScorePeriod = Math.floor(currentYear / 20) * 20;
-            let yearInScorePeriod = currentYear - startOfScorePeriod;
-            let scoreProgress = (yearInScorePeriod / 20) * 100;
-            scoreProgressFill.style.width = `${scoreProgress}%`;
-            scoreProgressText.textContent = `${scoreProgress.toFixed(2)}%`;
-
-            // Century (100 Years) Progress
-            let startOfCentury = Math.floor(currentYear / 100) * 100;
-            let yearInCentury = currentYear - startOfCentury;
-            let centuryProgress = (yearInCentury / 100) * 100;
-            centuryProgressFill.style.width = `${centuryProgress}%`;
-            centuryProgressText.textContent = `${centuryProgress.toFixed(2)}%`;
-
-            // Time Left in Day Progress
-            let secondsRemainingInDay = secondsInDay - secondsPassed;
-            let timeLeftDayProgress = (secondsRemainingInDay / secondsInDay) * 100;
-            timeLeftDayProgressFill.style.width = `${timeLeftDayProgress}%`;
-            timeLeftDayProgressText.textContent = `${timeLeftDayProgress.toFixed(2)}%`;
-
-
-            // Update Stats
-            currentDateDisplay.textContent = `Current Date: ${toLocaleDateString(now, timeZone)}`;
-            currentTimeDisplay.textContent = `Current Time: ${toLocaleTimeString(now, timeZone)}`;
-            weekOfYearDisplay.textContent = `Week of Year: ${getWeekOfYear(now, timeZone)}`;
-            secondsPassedTodayDisplay.textContent = `Seconds Passed Today: ${secondsPassed}`;
-            timeSpentOnSiteDisplay.textContent = `Time Spent on Site: ${getTimeSpentOnSite()}`;
+        function applyPrecisionSetting(value) {
+            const newPrecision = Math.max(0, Math.min(6, parseInt(value, 10))); // Clamp between 0 and 6
+            if (newPrecision !== percentagePrecision) {
+                percentagePrecision = newPrecision;
+                 setLocalStorage('percentagePrecision', percentagePrecision); // Save immediately
+                 updateDashboard(); // Force immediate update with new precision
+                 showFeedback(`Percentage precision set to ${newPrecision} decimals`);
+            }
         }
 
-        function getTimeSpentOnSite() {
-            const elapsedTimeMs = Date.now() - siteStartTime;
-            const seconds = Math.floor(elapsedTimeMs / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
+         function resetAllSettings() {
+            if (confirm("Are you sure you want to reset all settings to their defaults? This cannot be undone.")) {
+                 try {
+                     // Clear all keys with the prefix
+                     Object.keys(localStorage)
+                        .filter(key => key.startsWith(LS_PREFIX))
+                        .forEach(key => localStorage.removeItem(key));
 
-            const displayHours = String(hours).padStart(2, '0');
-            const displayMinutes = String(minutes % 60).padStart(2, '0');
-            const displaySeconds = String(seconds % 60).padStart(2, '0');
+                     // Reload the page to apply defaults cleanly
+                     window.location.reload();
+                 } catch (e) {
+                     console.error("Failed to reset settings:", e);
+                     showFeedback("Error: Could not reset settings.");
+                 }
+             }
+         }
 
-            return `${displayHours}:${displayMinutes}:${displaySeconds}`;
+
+        // --- Time Zone Fetch & Selection ---
+
+        function fetchTimezones() {
+             // Using a reliable source for timezone list (IANA names)
+             // Consider caching this fetch result in localStorage as well
+             const tzUrl = 'https://raw.githubusercontent.com/moment/moment-timezone/develop/data/meta/latest.json';
+             // Fallback URL if the first one fails
+             const fallbackTzUrl = 'https://nodatime.org/tzdb/latest.json'; // Provides similar data structure
+
+             fetch(tzUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => processTimezoneData(data))
+                 .catch(error => {
+                     console.warn('Primary timezone fetch failed:', error, 'Trying fallback...');
+                     return fetch(fallbackTzUrl);
+                 })
+                 .then(response => {
+                     // This block executes if the primary fetch failed and the fallback is attempted
+                     if (!response) return; // Already handled error or primary succeeded
+                     if (!response.ok) throw new Error(`Fallback HTTP error! status: ${response.status}`);
+                     return response.json();
+                 })
+                 .then(data => {
+                     if (data && timezonesData.length === 0) { // Only process if primary failed and fallback succeeded
+                         processTimezoneData(data);
+                     }
+                 })
+                 .catch(error => {
+                     console.error('Error fetching timezones (primary and fallback):', error);
+                     timezoneSearchInput.placeholder = "Error loading timezones.";
+                     timezoneSearchInput.disabled = true;
+                 });
         }
 
+        function processTimezoneData(data) {
+             if (data && data.zones) {
+                 timezonesData = Object.keys(data.zones).map(tzName => ({
+                     id: tzName,
+                     text: tzName.replace(/_/g, ' ') // Simple display text
+                 })).sort((a, b) => a.text.localeCompare(b.text)); // Sort alphabetically
+                 // console.log(`Loaded ${timezonesData.length} timezones.`);
+                 updateTimezoneDisplay(); // Ensure display matches loaded data
+             } else {
+                 console.error('Unexpected timezone data format:', data);
+                 timezoneSearchInput.placeholder = "Invalid timezone data.";
+                 timezoneSearchInput.disabled = true;
+             }
+         }
 
-        // Time Zone aware date/time functions (same as before)
-        function getFullYear(date, timeZone) { return new Date(date.toLocaleString('en-US', { timeZone })).getFullYear(); }
-        function getDayOfMonth(date, timeZone) { return new Date(date.toLocaleString('en-US', { timeZone })).getDate(); }
-        function getDayOfWeek(date, timeZone) { return new Date(date.toLocaleString('en-US', { timeZone })).getDay(); }
-        function getDaysInMonth(date, timeZone) {
-            const d = new Date(date.toLocaleString('en-US', { timeZone }));
-            return new Date(getFullYear(d, timeZone), d.getMonth() + 1, 0).getDate();
-        }
-        function isLeapYear(date, timeZone) {
-            const year = getFullYear(date, timeZone);
-            return new Date(year, 1, 29).getDate() === 29;
-        }
-        function getDayOfYear(date, timeZone) {
-            const d = new Date(date.toLocaleString('en-US', { timeZone }));
-            const startOfYear = new Date(getFullYear(d, timeZone), 0, 0);
-            const diff = d - startOfYear;
-            const oneDay = 1000 * 60 * 60 * 24;
-            return Math.floor(diff / oneDay);
-        }
-        function getWeekOfYear(date, timeZone) {
-            const d = new Date(date.toLocaleString('en-US', { timeZone }));
-            const dayNum = getDayOfWeek(d, timeZone) || 7;
-            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-            const yearStart = new Date(Date.UTC(getFullYear(d, timeZone), 0, 1));
-            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        }
-        function getSecondsPassedToday(date, timeZone) {
-            const d = new Date(date.toLocaleString('en-US', { timeZone }));
-            return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
-        }
-        function toLocaleDateString(date, timeZone) {
-            return date.toLocaleString('en-US', { timeZone, dateStyle: 'medium' });
-        }
-        function toLocaleTimeString(date, timeZone) {
-            return date.toLocaleString('en-US', { timeZone, timeStyle: 'medium' });
-        }
-
-        function updateQuote() {
-            const quotes = [
-                "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
-                "The best time to plant a tree was 20 years ago. The second best time is now. - Chinese Proverb",
-                "Time you enjoy wasting is not wasted time. - John Lennon",
-                "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-                "Lost time is never found again. - Benjamin Franklin",
-                "The two most powerful warriors are patience and time. - Leo Tolstoy",
-                "Time is what we want most, but what we use worst. - William Penn"
-            ];
-            const randomIndex = Math.floor(Math.random() * quotes.length);
-            dailyQuoteDisplay.textContent = quotes[randomIndex];
-        }
-
-        // Feature: Update Interval
-        applyIntervalButton.addEventListener('click', () => {
-            updateInterval = parseInt(updateIntervalInput.value, 10) * 1000;
-            if (updateInterval < 1000) updateInterval = 1000;
-            clearInterval(intervalId);
-            intervalId = setInterval(updateDashboard, updateInterval);
-        });
-
-
-        // Feature: Dark Mode Toggle
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            saveVisualPreferences();
-        });
-
-        // Feature: Time Zone Search and Selection
-        fetch('https://github.com/dmfilipenko/timezones.json/raw/refs/heads/master/timezones.json')
-            .then(response => response.json())
-            .then(data => {
-                timezonesData = data;
-                timezoneSearchInput.addEventListener('input', () => {
-                    const searchTerm = timezoneSearchInput.value.toLowerCase();
-                    const results = timezonesData.filter(tz =>
-                        tz.text.toLowerCase().includes(searchTerm) || tz.utc.some(u => u.toLowerCase().includes(searchTerm))
-                    );
-                    displayTimezoneResults(results);
-                });
-
-                // Set initial timezone display (after data is loaded)
-                updateTimezoneDisplay();
-            })
-            .catch(error => console.error('Error fetching timezones:', error));
-
-
-        function displayTimezoneResults(results) {
+        const displayTimezoneResults = debounce((searchTerm) => {
             timezoneSearchResultsDiv.innerHTML = '';
-            timezoneSearchResultsDiv.style.display = 'none'; // Hide if no results
+            timezoneSearchResultsDiv.style.display = 'none';
 
-            if (results.length > 0 && timezoneSearchInput.value.trim() !== '') {
-                timezoneSearchResultsDiv.style.display = 'block'; // Show if results
+            if (!searchTerm) return;
+
+             const lowerSearchTerm = searchTerm.toLowerCase();
+             let results = [];
+
+             // Prioritize exact matches or starting matches
+             results = timezonesData.filter(tz =>
+                 tz.id.toLowerCase().startsWith(lowerSearchTerm) ||
+                 tz.text.toLowerCase().startsWith(lowerSearchTerm)
+             );
+
+             // Add containing matches if few starting matches found
+             if (results.length < 10) {
+                const containingResults = timezonesData.filter(tz =>
+                    !results.includes(tz) && // Avoid duplicates
+                    (tz.id.toLowerCase().includes(lowerSearchTerm) || tz.text.toLowerCase().includes(lowerSearchTerm))
+                );
+                 results = results.concat(containingResults);
+             }
+
+
+            results = results.slice(0, 50); // Limit results
+
+            if (results.length > 0) {
+                timezoneSearchResultsDiv.style.display = 'block';
                 results.forEach(timezone => {
                     const resultDiv = document.createElement('div');
-                    resultDiv.textContent = timezone.text;
-                    resultDiv.addEventListener('click', () => {
-                        selectedTimeZone = timezone.utc[0]; // Use the first UTC value as timezone identifier
-                        timezoneSearchInput.value = timezone.text; // Display full timezone text in input
-                        timezoneSearchResultsDiv.style.display = 'none';
-                        updateDashboard();
-                        saveVisualPreferences();
-                        updateTimezoneDisplay();
-                    });
+                    resultDiv.textContent = timezone.text; // Display the cleaned-up text
+                    resultDiv.dataset.timezoneId = timezone.id; // Store the actual IANA ID
+                    resultDiv.addEventListener('click', () => selectTimezone(timezone.id, timezone.text));
                     timezoneSearchResultsDiv.appendChild(resultDiv);
                 });
             }
-        }
+        }, 250); // Debounce search results display
+
+         function selectTimezone(timezoneId, displayText) {
+            selectedTimeZone = timezoneId;
+            timezoneSearchInput.value = displayText; // Display user-friendly text
+            timezoneSearchResultsDiv.style.display = 'none';
+            updateDashboard(); // Trigger immediate update
+            saveVisualPreferences();
+             showFeedback(`Timezone set to ${displayText}`);
+         }
 
         function updateTimezoneDisplay() {
             if (selectedTimeZone === 'local') {
                 timezoneSearchInput.value = 'Local Time';
             } else {
-                const selectedTzData = timezonesData.find(tz => tz.utc.includes(selectedTimeZone));
+                const selectedTzData = timezonesData.find(tz => tz.id === selectedTimeZone);
                 if (selectedTzData) {
-                    timezoneSearchInput.value = selectedTzData.text;
-                } else {
-                    timezoneSearchInput.value = selectedTimeZone; // Fallback to timezone string if not found
-                }
+                    timezoneSearchInput.value = selectedTzData.text; // Show formatted text
+                } else if (timezonesData.length > 0) {
+                     // If data loaded but selection isn't found (e.g., from old localStorage)
+                     console.warn(`Selected timezone "${selectedTimeZone}" not found in loaded data. Resetting to local.`);
+                     selectedTimeZone = 'local';
+                     timezoneSearchInput.value = 'Local Time';
+                     saveVisualPreferences(); // Save the reset
+                 } else {
+                     // Data not loaded yet, just show the ID for now
+                     timezoneSearchInput.value = selectedTimeZone;
+                 }
             }
         }
 
 
-        // Feature: Countdown Timer
-        countdownTargetInput.addEventListener('change', () => {
-            clearInterval(countdownIntervalId);
-            const targetTime = new Date(countdownTargetInput.value).getTime();
-            if (isNaN(targetTime)) {
-                countdownDisplay.textContent = 'Invalid date/time.';
-                countdownProgressFill.style.width = '0%';
-                countdownProgressText.textContent = '0%';
-                return;
-            }
-
-            countdownIntervalId = setInterval(() => {
-                const now = new Date().getTime();
-                const timeLeft = targetTime - now;
-                const totalTime = new Date(countdownTargetInput.value).getTime() - new Date().getTime(); // initial total time
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdownIntervalId);
-                    countdownDisplay.textContent = 'Countdown finished!';
-                    countdownProgressFill.style.width = '100%';
-                    countdownProgressText.textContent = '100%';
-                    return;
-                }
-
-                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-                countdownDisplay.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-                const progressPercentage = ((totalTime - timeLeft) / totalTime) * 100;
-                countdownProgressFill.style.width = `${progressPercentage}%`;
-                countdownProgressText.textContent = `${progressPercentage.toFixed(2)}%`;
-
-
-            }, 1000);
-        });
-
-        // Feature: Progress Bar Color Customization
-        dayColorPicker.addEventListener('input', (event) => { dayProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        weekColorPicker.addEventListener('input', (event) => { weekProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        monthColorPicker.addEventListener('input', (event) => { monthProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        yearColorPicker.addEventListener('input', (event) => { yearProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        decadeColorPicker.addEventListener('input', (event) => { decadeProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        scoreColorPicker.addEventListener('input', (event) => { scoreProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        centuryColorPicker.addEventListener('input', (event) => { centuryProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        timeLeftDayColorPicker.addEventListener('input', (event) => { timeLeftDayProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-        countdownColorPicker.addEventListener('input', (event) => { countdownProgressFill.style.backgroundColor = event.target.value; saveVisualPreferences(); });
-
-
-        // Feature: Progress Bar Visual Style
-        progressBarVisualStyleSelect.addEventListener('change', () => {
-            applyVisualStylePreference();
-            saveVisualPreferences();
-        });
-
-
-        // Feature: Session Timer (Focus Timer) (same as before)
-        sessionStartButton.addEventListener('click', () => {
-            if (!sessionRunning) {
-                sessionRunning = true;
-                if (sessionStartTime === 0) {
-                    sessionStartTime = Date.now() - sessionElapsedTime;
-                } else {
-                    sessionStartTime = Date.now() - sessionElapsedTime;
-                }
-
-                sessionTimerInterval = setInterval(updateSessionTimer, 1000);
-                sessionStartButton.textContent = 'Resume';
-                sessionPauseButton.textContent = 'Pause';
-            } else {
-                sessionRunning = true;
-                sessionStartTime = Date.now() - sessionElapsedTime;
-                sessionTimerInterval = setInterval(updateSessionTimer, 1000);
-                sessionStartButton.textContent = 'Resume';
-                sessionPauseButton.textContent = 'Pause';
-            }
-        });
-
-        sessionPauseButton.addEventListener('click', () => {
-            if (sessionRunning) {
-                sessionRunning = false;
-                clearInterval(sessionTimerInterval);
-                sessionElapsedTime = Date.now() - sessionStartTime;
-                sessionStartButton.textContent = 'Resume';
-                sessionPauseButton.textContent = 'Pause';
-            }
-        });
-
-        sessionResetButton.addEventListener('click', () => {
-            sessionRunning = false;
-            clearInterval(sessionTimerInterval);
-            sessionStartTime = 0;
-            sessionElapsedTime = 0;
-            sessionTimerDisplay.textContent = '00:00:00';
-            sessionStartButton.textContent = 'Start';
-            sessionPauseButton.textContent = 'Pause';
-        });
-
-        function updateSessionTimer() {
-            sessionElapsedTime = Date.now() - sessionStartTime;
-            const seconds = Math.floor(sessionElapsedTime / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-
-            const displayHours = String(hours).padStart(2, '0');
-            const displayMinutes = String(minutes % 60).padStart(2, '0');
-            const displaySeconds = String(seconds % 60).padStart(2, '0');
-
-            sessionTimerDisplay.textContent = `${displayHours}:${displayMinutes}:${displaySeconds}`;
-        }
-
-        // Feature: Analog Clock (Embed - using a simple iframe example, replace with better if needed)
-        function embedAnalogClock() {
-            analogClockEmbedDiv.innerHTML = `<iframe src="https://free.timeanddate.com/clock/i8zt1kw1/n840/szw110/szh110/hoc000/hbw0/hfc000/cf100/hnc0ff9/hcw2/hsw3/fas0/fap60/fan8/fdi0/fdr0/fhs0/fhc000/fhm000/fhs000" frameborder="0" width="110" height="110"></iframe>`;
-        }
-
+        // --- Main Update Loop ---
 
         function updateDashboard() {
-            updateProgressBars();
-            updateQuote();
+            const now = getAdjustedDate(); // Get current time adjusted for potential future needs
+
+            // Update components that change every second/sub-second
+            updateAllProgressBars(now);
+            updateStats(now);
+
+             // Update things that don't need sub-second updates less frequently if needed
+             // Example: updateQuote could be called less often
         }
 
+        function mainLoop() {
+            // Clear previous loops
+            clearInterval(mainIntervalId);
+            cancelAnimationFrame(animationFrameId);
 
-        loadVisualPreferences(); // Load preferences on page load, before initial update
-        updateTimezoneDisplay(); // Set initial timezone input text
-        updateDashboard(); // Initial update on page load
-        embedAnalogClock(); // Embed analog clock
-        let intervalId = setInterval(updateDashboard, updateInterval); // Update every second initially
+            function tick() {
+                const now = getAdjustedDate();
+                // Frequent updates (potentially smoother for analog clock)
+                drawAnalogClock(now);
+                if(sessionRunning) runSessionTimer(); // Update session timer frequently if running
+
+                // Less frequent updates based on interval
+                 // Handled by the setInterval below
+            }
+
+            function intervalTick() {
+                 // Updates based on the user-defined interval
+                 updateDashboard(); // Update progress bars, stats, quote etc.
+                 updateQuote(); // Update quote on the main interval tick
+            }
+
+            // Run the main dashboard update immediately
+             intervalTick();
+
+            // Set up the interval for less frequent updates
+            mainIntervalId = setInterval(intervalTick, updateInterval);
+
+             // Set up the animation frame loop for potentially smoother visuals
+            function animationLoop() {
+                 tick();
+                 animationFrameId = requestAnimationFrame(animationLoop);
+             }
+             animationFrameId = requestAnimationFrame(animationLoop);
+        }
+
+        // --- Event Listeners ---
+
+        function setupEventListeners() {
+            // Theme Toggle
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                drawAnalogClock(getAdjustedDate()); // Redraw clock immediately with new theme colors
+                saveVisualPreferences();
+                 showFeedback(document.body.classList.contains('dark-mode') ? "Dark Mode Enabled" : "Light Mode Enabled");
+            });
+
+            // Update Interval
+            applyIntervalButton.addEventListener('click', () => {
+                const inputVal = parseFloat(updateIntervalInput.value);
+                 if (!isNaN(inputVal) && inputVal >= 0.1) {
+                    setUpdateInterval(inputVal);
+                 } else {
+                     showFeedback("Invalid interval (min 0.1s).");
+                     updateIntervalInput.value = updateInterval / 1000; // Reset input to current value
+                 }
+            });
+
+            // Percentage Precision
+            applyPrecisionButton.addEventListener('click', () => {
+                 const inputVal = parseInt(percentagePrecisionInput.value, 10);
+                 if (!isNaN(inputVal)) {
+                     applyPrecisionSetting(inputVal);
+                 } else {
+                      showFeedback("Invalid precision value.");
+                      percentagePrecisionInput.value = percentagePrecision; // Reset input
+                 }
+             });
 
 
-										</script>
+            // Timezone Search
+            timezoneSearchInput.addEventListener('input', () => {
+                const searchTerm = timezoneSearchInput.value.trim();
+                if (searchTerm.toLowerCase() === 'local time' || searchTerm === '') {
+                    displayTimezoneResults(null); // Clear results if typing 'local time' or empty
+                } else {
+                    displayTimezoneResults(searchTerm);
+                }
+            });
+            timezoneSearchInput.addEventListener('focus', () => {
+                 // Maybe show recent/popular timezones on focus? For now, just triggers input listener.
+                 displayTimezoneResults(timezoneSearchInput.value.trim());
+            });
+             timezoneSearchInput.addEventListener('blur', () => {
+                 // Hide results after a short delay to allow clicking on a result
+                 setTimeout(() => {
+                    timezoneSearchResultsDiv.style.display = 'none';
+                    // Optional: If input doesn't match a valid TZ, reset it
+                    if (selectedTimeZone === 'local' && timezoneSearchInput.value !== 'Local Time') {
+                        updateTimezoneDisplay();
+                    } else {
+                        const currentInputTz = timezonesData.find(tz => tz.text === timezoneSearchInput.value || tz.id === timezoneSearchInput.value);
+                        if (!currentInputTz && selectedTimeZone !== 'local' && timezoneSearchInput.value !== selectedTimeZone) {
+                            updateTimezoneDisplay(); // Reset to the actual selected TZ display text
+                        }
+                    }
+                 }, 200);
+            });
+             // Handle 'Local Time' selection explicitly
+             timezoneSearchInput.addEventListener('change', () => {
+                 if (timezoneSearchInput.value.trim().toLowerCase() === 'local time') {
+                     selectTimezone('local', 'Local Time');
+                 }
+             });
+
+
+            // Countdown Timer
+            countdownTargetInput.addEventListener('change', startCountdown);
+
+            // Color Pickers
+            for (const key in colorPickers) {
+                colorPickers[key].addEventListener('input', (event) => {
+                    if (progressFills[key]) {
+                        progressFills[key].style.backgroundColor = event.target.value;
+                    }
+                     // Redraw clock immediately if theme colors affect it (indirectly via CSS vars)
+                     drawAnalogClock(getAdjustedDate());
+                    saveVisualPreferences(); // Debounced saving
+                });
+            }
+
+            // Progress Bar Style
+            progressBarVisualStyleSelect.addEventListener('change', () => {
+                applyVisualStylePreference();
+                saveVisualPreferences(); // Debounced saving
+                showFeedback("Progress bar style updated.");
+            });
+
+            // Session Timer Controls
+            sessionStartButton.addEventListener('click', startSession);
+            sessionPauseButton.addEventListener('click', pauseSession);
+            sessionResetButton.addEventListener('click', resetSession);
+
+            // Reset Settings Button
+            resetSettingsButton.addEventListener('click', resetAllSettings);
+
+            // Offline/Online Status
+            window.addEventListener('offline', () => offlineMessage.style.display = 'block');
+            window.addEventListener('online', () => offlineMessage.style.display = 'none');
+            if (!navigator.onLine) {
+                 offlineMessage.style.display = 'block';
+            }
+
+             // Keyboard Shortcuts
+            document.addEventListener('keydown', (event) => {
+                 // Ignore shortcuts if user is typing in an input/textarea
+                 if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'SELECT') {
+                     return;
+                 }
+
+                 switch (event.key.toUpperCase()) {
+                     case 'T':
+                         event.preventDefault();
+                         themeToggle.click();
+                         break;
+                     case 'S':
+                         event.preventDefault();
+                         if (sessionRunning) {
+                             sessionPauseButton.click();
+                         } else {
+                             sessionStartButton.click();
+                         }
+                         break;
+                     case 'R':
+                          event.preventDefault();
+                          sessionResetButton.click();
+                          break;
+                 }
+             });
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show container, hide loading indicator
+            container.classList.remove('hidden');
+            loadingIndicator.style.display = 'none';
+
+            loadVisualPreferences(); // Load saved settings first
+            fetchTimezones();       // Start fetching timezone data
+            setupEventListeners();  // Attach event listeners
+            mainLoop();             // Start the main update loop
+            updateQuote();          // Get initial quote
+        });
+
+	</script>
 
 </body>
-
 </html>
