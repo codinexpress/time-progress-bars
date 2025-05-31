@@ -82,12 +82,12 @@ const Hourglass: React.FC<HourglassProps> = ({
             mask={`url(#${maskIdBottom})`}
           />
         </svg>
-        <div 
-          className="absolute inset-0 flex items-center justify-center text-xl sm:text-2xl font-bold"
-          style={{ color: percentageColor }}
-        >
-          {clampedPercentage.toFixed(1)}%
-        </div>
+      </div>
+      <div
+        className="mt-2 text-xl sm:text-2xl font-bold"
+        style={{ color: percentageColor }}
+      >
+        {clampedPercentage.toFixed(1)}%
       </div>
       
       {details && (
