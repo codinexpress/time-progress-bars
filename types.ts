@@ -123,3 +123,19 @@ export interface ColorCustomizerProps {
   onResetColors: () => void;
   // availableColors prop is removed as we are using input type="color"
 }
+
+export interface Comment {
+  id: string;
+  author: string;
+  text: string;
+  timestamp: string; // ISO string
+}
+
+export interface CommentData { // The structure stored in the bin
+  comments: Comment[];
+}
+
+export interface CommentSectionProps {
+  apiKey: string; // API key for extendsclass.com
+  appTheme: Theme; // To help style the comment section consistently
+}

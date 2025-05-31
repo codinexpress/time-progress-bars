@@ -8,6 +8,7 @@ import TimeSpiral from './components/TimeSpiral';
 import Hourglass from './components/Hourglass'; 
 import RadialSlice from './components/RadialSlice'; 
 import ColorCustomizer from './components/ColorCustomizer';
+import CommentSection from './components/CommentSection'; // Import CommentSection
 import { 
   ProgressItemConfig, Theme, WeekStartDay, SettingsProps, VisualizationMode, 
   AppSettings, TimeUnitId, CustomColors
@@ -138,7 +139,10 @@ const defaultAppSettings: AppSettings = {
   customColors: {},
 };
 
-type ActiveTab = 'visualizations' | 'settings' | 'colors';
+// Add 'comments' to ActiveTab type
+type ActiveTab = 'visualizations' | 'settings' | 'colors' | 'comments';
+
+const EXTENDSCLASS_API_KEY = "d9892a88-3e66-11f0-8efd-0242ac110009";
 
 const SettingsDisplay: React.FC<SettingsProps> = ({
   settings,
@@ -315,6 +319,8 @@ const App: React.FC = () => {
   const handleResetAllSettings = useCallback(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem('temporalFluxSettings');
+      // Also clear comment bin ID if we want full reset
+      // localStorage.removeItem('temporalFluxCommentsBinId_v2'); // We might not want to clear comments on app settings reset
     }
     const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
     setAppSettings({ ...defaultAppSettings, theme: prefersDark ? 'dark' : 'light' });
@@ -323,21 +329,14 @@ const App: React.FC = () => {
 
   // This function now prepares hex color strings for components
   const getDynamicHexColors = (baseHexColor: string) => {
-    // For elements like filled pixels or progress bars
     const primaryColor = baseHexColor;
-    // For text elements that should adopt the unit's specific color (e.g., icons, main percentage display)
     const unitSpecificTextColor = baseHexColor; 
-    // For empty pixels, we can use the primary color with some alpha
-    // Convert hex to RGBA for transparency, e.g., #RRGGBB -> rgba(r,g,b,0.2)
-    // A simple way to add alpha to hex: append two hex digits (e.g., '33' for 20% opacity)
-    // This might not be universally supported by all style properties directly, but works for backgroundColor.
-    const emptyPixelHexColor = `${baseHexColor}33`; // Approx 20% opacity
+    const emptyPixelHexColor = `${baseHexColor}33`;
 
     return {
       primary: primaryColor,
-      unitSpecificText: unitSpecificTextColor, // Used for icons and main value text
-      emptyPixel: emptyPixelHexColor, // For PixelGrid empty pixels
-      // General card text remains theme-based for readability
+      unitSpecificText: unitSpecificTextColor, 
+      emptyPixel: emptyPixelHexColor, 
       cardGeneralTextColor: appSettings.theme === 'dark' ? 'text-slate-300' : 'text-slate-700',
       progressBarDetailTextColor: appSettings.theme === 'dark' ? 'text-slate-400' : 'text-slate-600',
     };
@@ -352,10 +351,12 @@ const App: React.FC = () => {
     radialSlice: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
   };
   
+  // Updated tabs array
   const tabs: { id: ActiveTab, label: string }[] = [
     { id: 'visualizations', label: 'Visualizations' },
     { id: 'settings', label: 'Display Settings' },
     { id: 'colors', label: 'Color Scheme' },
+    { id: 'comments', label: 'Comments' }, // New "Comments" tab
   ];
 
   return (
@@ -405,13 +406,11 @@ const App: React.FC = () => {
                   label: config.label,
                   percentage: details.percentage,
                   details: { elapsed: details.elapsed, remaining: details.remaining, period: details.period },
-                  // Pass the hex color for the icon
                   icon: config.icon({ className: 'w-5 h-5', color: unitColors.unitSpecificText }),
                   textColor: unitColors.cardGeneralTextColor, 
-                  mainValueColor: unitColors.unitSpecificText, // Use the chosen unit color for the main percentage
+                  mainValueColor: unitColors.unitSpecificText, 
                 };
                 
-                // Define a consistent className for card text color that components can use if they don't get a specific hex for textColor.
                 const cardTextColorClass = appSettings.theme === 'dark' ? 'text-slate-300' : 'text-slate-700';
 
                 return (
@@ -419,26 +418,26 @@ const App: React.FC = () => {
                     {appSettings.visualizationMode === 'bars' && (
                       <ProgressBar
                         {...commonProps}
-                        icon={config.icon({ className: 'w-5 h-5', color: unitColors.progressBarDetailTextColor})} // ProgressBar icons use detail text color
-                        textColor={unitColors.progressBarDetailTextColor} // For label and % at top of bar
-                        barColor={unitColors.primary} // Hex color
-                        trailColor="bg-slate-200 dark:bg-slate-700" // Theme-based
+                        icon={config.icon({ className: 'w-5 h-5', color: unitColors.progressBarDetailTextColor})} 
+                        textColor={unitColors.progressBarDetailTextColor} 
+                        barColor={unitColors.primary} 
+                        trailColor="bg-slate-200 dark:bg-slate-700" 
                       />
                     )}
                     {appSettings.visualizationMode === 'orbits' && (
                       <TimeOrbit
                         {...commonProps}
                         textColor={cardTextColorClass}
-                        planetColor={unitColors.primary} // Hex color
-                        orbitColor={appSettings.theme === 'dark' ? '#334155' : '#e2e8f0'} // slate-700 / slate-200
+                        planetColor={unitColors.primary} 
+                        orbitColor={appSettings.theme === 'dark' ? '#334155' : '#e2e8f0'} 
                       />
                     )}
                     {appSettings.visualizationMode === 'pixels' && (
                       <PixelGrid
                         {...commonProps}
                         textColor={cardTextColorClass}
-                        pixelColor={unitColors.primary} // Hex color for filled pixels
-                        emptyPixelColor={unitColors.emptyPixel} // Hex color with alpha for empty pixels
+                        pixelColor={unitColors.primary} 
+                        emptyPixelColor={unitColors.emptyPixel}
                         gridRows={config.gridConfig?.rows ?? 8} 
                         gridCols={config.gridConfig?.cols ?? (config.id === 'second' || config.id === 'minute' ? 10 : 8)}
                       />
@@ -447,24 +446,24 @@ const App: React.FC = () => {
                       <TimeSpiral
                         {...commonProps}
                         textColor={cardTextColorClass}
-                        spiralColor={unitColors.primary} // Hex color
-                        trackColor={appSettings.theme === 'dark' ? '#334155' : '#e2e8f0'} // slate-700 / slate-200
+                        spiralColor={unitColors.primary} 
+                        trackColor={appSettings.theme === 'dark' ? '#334155' : '#e2e8f0'} 
                       />
                     )}
                     {appSettings.visualizationMode === 'hourglass' && (
                       <Hourglass
                         {...commonProps}
                         textColor={cardTextColorClass}
-                        sandColor={unitColors.primary} // Hex color
-                        frameColor={appSettings.theme === 'dark' ? '#64748b' : '#94a3b8'} // slate-500 / slate-400
+                        sandColor={unitColors.primary} 
+                        frameColor={appSettings.theme === 'dark' ? '#64748b' : '#94a3b8'} 
                       />
                     )}
                     {appSettings.visualizationMode === 'radialSlice' && (
                       <RadialSlice
                         {...commonProps}
                         textColor={cardTextColorClass}
-                        sliceColor={unitColors.primary} // Hex color
-                        trackColor={appSettings.theme === 'dark' ? '#334155' : '#e2e8f0'} // slate-700 / slate-200
+                        sliceColor={unitColors.primary} 
+                        trackColor={appSettings.theme === 'dark' ? '#334155' : '#e2e8f0'}
                       />
                     )}
                   </div>
@@ -485,6 +484,13 @@ const App: React.FC = () => {
               customColors={appSettings.customColors}
               onColorChange={handleColorChange}
               onResetColors={handleResetColors}
+            />
+          )}
+           {/* Render CommentSection for the new tab */}
+          {activeTab === 'comments' && (
+            <CommentSection 
+              apiKey={EXTENDSCLASS_API_KEY} 
+              appTheme={appSettings.theme} 
             />
           )}
         </div>

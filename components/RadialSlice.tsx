@@ -62,12 +62,12 @@ const RadialSlice: React.FC<RadialSliceProps> = ({
             />
           )}
         </svg>
-      </div>
-      <div
-        className="mt-2 text-xl sm:text-2xl font-bold"
-        style={{ color: percentageColor }}
-      >
-        {clampedPercentage.toFixed(1)}%
+        <div 
+          className="absolute inset-0 flex items-center justify-center text-xl sm:text-2xl font-bold"
+          style={{ color: percentageColor }}
+        >
+          {clampedPercentage.toFixed(1)}%
+        </div>
       </div>
       
       {details && (
