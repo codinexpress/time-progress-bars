@@ -13,10 +13,14 @@ import {
   ProgressItemConfig, Theme, WeekStartDay, SettingsProps, VisualizationMode, 
   AppSettings, TimeUnitId, CustomColors
 } from './types';
+import VisitorCountDisplay from './components/VisitorCountDisplay';
+import LikeButton from './components/LikeButton';
+import RatingSystem from './components/RatingSystem';
 import {
   getSecondDetails, getMinuteDetails, getHourDetails, 
   getDayDetails, getWeekDetails, getMonthDetails, getYearDetails, getDecadeDetails,
 } from './utils/timeUtils';
+import { getValue, updateValue } from './utils/keyValueService';
 
 // --- SVG Icons ---
 // Helper for icon props
@@ -277,6 +281,20 @@ const App: React.FC = () => {
     return { ...defaultAppSettings, theme: prefersDark ? 'dark' : 'light' };
   });
 
+// New state variables
+const [visitorCount, setVisitorCount] = useState<number | null>(null);
+const [likeCount, setLikeCount] = useState<number | null>(null);
+const [ratingCounts, setRatingCounts] = useState<Record<string, number>>({
+  '1': 0,
+  '2': 0,
+  '3': 0,
+  '4': 0,
+  '5': 0,
+});
+const APP_KEY = "l3micf0v"; // Provided app key
+const LIKE_COUNT_KEY = 'likeCount';
+const RATING_KEY_PREFIX = 'rating_';
+
   useEffect(() => {
     const timerId = setInterval(() => {
       setCurrentTime(new Date());
@@ -297,6 +315,137 @@ const App: React.FC = () => {
       localStorage.setItem('temporalFluxSettings', JSON.stringify(appSettings));
     }
   }, [appSettings]);
+
+  useEffect(() => {
+    const VISITOR_COUNT_KEY = 'visitorCount';
+
+    const initializeVisitorCount = async () => {
+      try {
+        let currentCount = 0;
+        const storedCountStr = await getValue(APP_KEY, VISITOR_COUNT_KEY);
+
+        if (storedCountStr !== null) {
+          const parsedCount = parseInt(storedCountStr, 10);
+          if (!isNaN(parsedCount)) {
+            currentCount = parsedCount;
+          } else {
+            console.warn(`Stored visitor count "${storedCountStr}" is not a valid number. Resetting to 0.`);
+            await updateValue(APP_KEY, VISITOR_COUNT_KEY, '0');
+          }
+        }
+
+        const newCount = currentCount + 1;
+        setVisitorCount(newCount);
+
+        const updateSuccess = await updateValue(APP_KEY, VISITOR_COUNT_KEY, newCount.toString());
+        if (!updateSuccess) {
+          console.error('Failed to update visitor count on the server.');
+        }
+      } catch (error) {
+        console.error('Error initializing visitor count:', error);
+      }
+    };
+
+    const initializeLikeCount = async () => {
+      try {
+        const storedLikeCountStr = await getValue(APP_KEY, LIKE_COUNT_KEY);
+        if (storedLikeCountStr !== null) {
+          const parsedLikes = parseInt(storedLikeCountStr, 10);
+          if (!isNaN(parsedLikes)) {
+            setLikeCount(parsedLikes);
+          } else {
+            console.warn(`Stored like count "${storedLikeCountStr}" is not a valid number. Initializing to 0.`);
+            setLikeCount(0);
+            await updateValue(APP_KEY, LIKE_COUNT_KEY, '0');
+          }
+        } else {
+          setLikeCount(0);
+        }
+      } catch (error) {
+        console.error('Error initializing like count:', error);
+        setLikeCount(0);
+      }
+    };
+
+    initializeVisitorCount();
+    initializeLikeCount();
+    initializeRatingCounts();
+  }, []);
+
+  const handleLike = async () => {
+    setLikeCount(prevLikes => {
+      const newLikes = (prevLikes === null ? 0 : prevLikes) + 1;
+
+      updateValue(APP_KEY, LIKE_COUNT_KEY, newLikes.toString()).then(success => {
+        if (!success) {
+          console.error('Failed to update like count on the server.');
+          // Optionally, revert state or show error to user
+          // setLikeCount(prevLikes);
+        }
+      });
+      return newLikes;
+    });
+  };
+
+  const initializeRatingCounts = async () => {
+    try {
+      const newRatingCounts: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+      let needsServerUpdateForDefaults = false;
+
+      for (let i = 1; i <= 5; i++) {
+        const ratingKey = `${RATING_KEY_PREFIX}${i}`;
+        const storedRatingCountStr = await getValue(APP_KEY, ratingKey);
+
+        if (storedRatingCountStr !== null) {
+          const parsedCount = parseInt(storedRatingCountStr, 10);
+          if (!isNaN(parsedCount)) {
+            newRatingCounts[i.toString()] = parsedCount;
+          } else {
+            console.warn(`Stored rating count for key "${ratingKey}" ("${storedRatingCountStr}") is not a valid number. Initializing to 0.`);
+            newRatingCounts[i.toString()] = 0;
+            await updateValue(APP_KEY, ratingKey, '0');
+          }
+        } else {
+          newRatingCounts[i.toString()] = 0;
+          await updateValue(APP_KEY, ratingKey, '0');
+          needsServerUpdateForDefaults = true;
+        }
+      }
+      setRatingCounts(newRatingCounts);
+      if (needsServerUpdateForDefaults) {
+          console.log("Initialized some rating counts to 0 on the server.");
+      }
+
+    } catch (error) {
+      console.error('Error initializing rating counts:', error);
+    }
+  };
+
+  const handleRating = async (rating: number) => {
+    if (rating < 1 || rating > 5) {
+      console.error(`Invalid rating: ${rating}. Must be between 1 and 5.`);
+      return;
+    }
+
+    const ratingKey = `${RATING_KEY_PREFIX}${rating}`;
+
+    setRatingCounts(prevRatingCounts => {
+      const currentSpecificRatingCount = prevRatingCounts[rating.toString()] || 0;
+      const newSpecificRatingCount = currentSpecificRatingCount + 1;
+
+      const updatedCounts = {
+        ...prevRatingCounts,
+        [rating.toString()]: newSpecificRatingCount,
+      };
+
+      updateValue(APP_KEY, ratingKey, newSpecificRatingCount.toString()).then(success => {
+        if (!success) {
+          console.error(`Failed to update rating count for key "${ratingKey}" on the server.`);
+        }
+      });
+      return updatedCounts;
+    });
+  };
 
   const handleSettingChange = useCallback(<K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     setAppSettings(prev => ({ ...prev, [key]: value }));
@@ -496,6 +645,9 @@ const App: React.FC = () => {
         </div>
         
         <footer className="mt-8 sm:mt-10 text-center">
+          <VisitorCountDisplay count={visitorCount} />
+          <LikeButton likeCount={likeCount} onLike={handleLike} />
+          <RatingSystem ratingCounts={ratingCounts} onRate={handleRating} />
           <p className="text-xs text-slate-500 dark:text-slate-400/80">
             Crafted with React, TypeScript & Tailwind CSS. &copy; {new Date().getFullYear()}
           </p>
