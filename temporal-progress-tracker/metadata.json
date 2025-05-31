@@ -1,6 +1,0 @@
-{
-  "name": "Temporal Progress Tracker",
-  "description": "A sleek web application that visualizes the progress through various time units: day, week, month, year, and decade, with a real-time updating display.",
-  "requestFramePermissions": [],
-  "prompt": ""
-}
