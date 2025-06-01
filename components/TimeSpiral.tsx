@@ -52,7 +52,7 @@ const TimeSpiral: React.FC<TimeSpiralProps> = ({
   const percentageColor = mainValueColor || spiralColor;
   
   return (
-    <div className={`p-3 sm:p-4 rounded-lg shadow-lg bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 flex flex-col items-center ${textColor}`}>
+    <div className={`p-3 sm:p-4 flex flex-col items-center ${textColor}`}> {/* Removed card classes */}
       <div className="flex items-center space-x-2 mb-2">
         {icon && <span className="w-5 h-5 sm:w-6 sm:h-6">{icon}</span>}
         <span className="text-sm sm:text-md font-semibold">{label}</span>
@@ -70,7 +70,7 @@ const TimeSpiral: React.FC<TimeSpiralProps> = ({
           <path
             d={spiralPathData}
             stroke={spiralColor}
-            className="transition-all duration-100 ease-out"
+            className="transition-all duration-150 ease-out"
             strokeWidth="6"
             fill="none"
             strokeLinecap="round"
@@ -81,7 +81,7 @@ const TimeSpiral: React.FC<TimeSpiralProps> = ({
       </div>
       
       <div 
-        className="text-xl sm:text-2xl font-bold mt-2" // Moved percentage text here, added margin top
+        className="text-xl sm:text-2xl font-bold mt-2"
         style={{ color: percentageColor }}
       >
         {clampedPercentage.toFixed(1)}%

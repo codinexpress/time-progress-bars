@@ -24,14 +24,11 @@ const TimeOrbit: React.FC<TimeOrbitProps> = ({
   
   const percentageColor = mainValueColor || planetColor;
 
-  // Simplified shadow for planet (using fixed color related to planetColor or removing if too complex without CSS vars)
-  // For simplicity, let's use a fixed shadow or none.
-  // const planetShadow = planetColor ? `${planetColor}66` : 'transparent'; // Add alpha for shadow
 
   return (
-    <div className={`p-4 rounded-lg shadow-lg bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 flex flex-col items-center ${textColor}`}>
+    <div className={`p-4 flex flex-col items-center ${textColor}`}> {/* Removed card classes, will be applied by parent in App.tsx */}
       <div className="flex items-center space-x-2 mb-2">
-        {icon && <span className="w-6 h-6">{icon}</span>} {/* Icon color is passed via props to App.tsx */}
+        {icon && <span className="w-6 h-6">{icon}</span>}
         <span className="text-md font-semibold">{label}</span>
       </div>
 
@@ -50,8 +47,7 @@ const TimeOrbit: React.FC<TimeOrbitProps> = ({
             cy={y}
             r={planetRadius}
             fill={planetColor}
-            className="transition-all duration-100 ease-out"
-            // style={{ filter: `drop-shadow(0 0 3px ${planetShadow})` }} // Simplified or removed shadow
+            className="transition-all duration-150 ease-out"
           />
         </svg>
         <div 

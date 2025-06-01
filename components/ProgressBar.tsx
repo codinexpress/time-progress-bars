@@ -20,8 +20,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   const labelClassName = isTextColorHex ? '' : textColor;
 
   return (
-    <div className="mb-6">
-      <div className={`flex justify-between items-center mb-1 ${labelClassName}`} style={labelStyle}>
+    <div className="mb-6 p-4 rounded-xl shadow-lg bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700">
+      <div className={`flex justify-between items-center mb-2 ${labelClassName}`} style={labelStyle}>
         <div className="flex items-center space-x-2">
           {icon && <span className="w-5 h-5">{icon}</span>}
           <span className="text-sm font-medium">{label}</span>
@@ -30,9 +30,9 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           <span className="text-sm font-medium">{clampedPercentage.toFixed(2)}%</span>
         )}
       </div>
-      <div className={`w-full ${trailColor} rounded-full h-3 overflow-hidden shadow-inner`}>
+      <div className={`w-full ${trailColor} rounded-full h-5 overflow-hidden shadow-inner`}>
         <div
-          className="h-3 rounded-full transition-all duration-100 ease-out"
+          className="h-5 rounded-full transition-all duration-150 ease-out"
           style={{ width: `${clampedPercentage}%`, backgroundColor: barColor }}
           role="progressbar"
           aria-valuenow={clampedPercentage}
@@ -42,7 +42,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         ></div>
       </div>
       {details && (
-        <div className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 space-y-0.5">
+        <div className="mt-2 text-xs text-slate-500 dark:text-slate-400 space-y-0.5">
           <p><strong className="font-semibold text-slate-600 dark:text-slate-300">Elapsed:</strong> {details.elapsed}</p>
           <p><strong className="font-semibold text-slate-600 dark:text-slate-300">Remaining:</strong> {details.remaining}</p>
           <p><strong className="font-semibold text-slate-600 dark:text-slate-300">Period:</strong> {details.period}</p>

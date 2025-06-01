@@ -14,22 +14,20 @@ const RadialSlice: React.FC<RadialSliceProps> = ({
 }) => {
   const clampedPercentage = Math.max(0, Math.min(100, percentage));
   const viewBoxSize = 100;
-  const outerRadius = 40; // The visual outer radius of the pie
+  const outerRadius = 40; 
   const centerX = viewBoxSize / 2;
   const centerY = viewBoxSize / 2;
 
-  // For the progress circle using stroke-dasharray to simulate a pie:
-  // The progress circle's radius is half the outerRadius, and strokeWidth is the full outerRadius.
   const progressCircleRadius = outerRadius / 2;
   const circumference = 2 * Math.PI * progressCircleRadius;
   const strokeDashoffset = circumference * (1 - clampedPercentage / 100);
 
   const percentageColor = mainValueColor || sliceColor;
   
-  const progressCircleClassName = 'transition-all duration-100 ease-out';
+  const progressCircleClassName = 'transition-all duration-150 ease-out';
 
   return (
-    <div className={`p-3 sm:p-4 rounded-lg shadow-lg bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 flex flex-col items-center ${textColor}`}>
+    <div className={`p-3 sm:p-4 flex flex-col items-center ${textColor}`}> {/* Removed card classes */}
       <div className="flex items-center space-x-2 mb-2">
         {icon && <span className="w-5 h-5 sm:w-6 sm:h-6">{icon}</span>}
         <span className="text-sm sm:text-md font-semibold">{label}</span>
@@ -37,28 +35,26 @@ const RadialSlice: React.FC<RadialSliceProps> = ({
 
       <div className="relative w-32 h-32 sm:w-36 sm:h-36">
         <svg viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`} className="w-full h-full">
-          {/* Background Track Circle */}
           <circle
             cx={centerX}
             cy={centerY}
-            r={outerRadius} // Track fills the full outer radius
+            r={outerRadius}
             fill={trackColor}
           />
           
-          {/* Foreground Progress Circle (Pie Slice) */}
-          {clampedPercentage > 0.001 && ( // Avoid rendering tiny artifacts for 0%
+          {clampedPercentage > 0.001 && ( 
             <circle
               cx={centerX}
               cy={centerY}
-              r={progressCircleRadius} // Radius is half, stroke makes it full
+              r={progressCircleRadius} 
               fill="none"
               stroke={sliceColor}
-              strokeWidth={outerRadius} // Stroke width is the full visual radius
+              strokeWidth={outerRadius} 
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
-              transform={`rotate(-90 ${centerX} ${centerY})`} // Start from the top
+              transform={`rotate(-90 ${centerX} ${centerY})`} 
               className={progressCircleClassName}
-              strokeLinecap="butt" // Use butt for cleaner start/end of stroke
+              strokeLinecap="butt" 
             />
           )}
         </svg>

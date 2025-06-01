@@ -17,7 +17,7 @@ const Hourglass: React.FC<HourglassProps> = ({
   const viewBoxHeight = 150;
 
   const neckY = viewBoxHeight / 2;
-  const bulbWidth = viewBoxWidth * 0.8; // Adjusted for fill
+  const bulbWidth = viewBoxWidth * 0.8; 
   const neckWidth = viewBoxWidth * 0.1;
   const bulbHeight = (viewBoxHeight / 2) * 0.85;
   const framePadding = 5; 
@@ -28,8 +28,6 @@ const Hourglass: React.FC<HourglassProps> = ({
   const bottomSandY = neckY;
   const bottomSandFillHeight = bulbHeight * (clampedPercentage / 100);
 
-
-  // Paths for the bulbs (used for mask and frame)
   const topBulbPath = `M${framePadding},${framePadding} L${viewBoxWidth-framePadding},${framePadding} L${viewBoxWidth/2 + neckWidth/2},${neckY} L${viewBoxWidth/2 - neckWidth/2},${neckY} Z`;
   const bottomBulbPath = `M${viewBoxWidth/2 - neckWidth/2},${neckY} L${viewBoxWidth/2 + neckWidth/2},${neckY} L${viewBoxWidth-framePadding},${viewBoxHeight-framePadding} L${framePadding},${viewBoxHeight-framePadding} Z`;
   
@@ -39,9 +37,9 @@ const Hourglass: React.FC<HourglassProps> = ({
   const maskIdBottom = `hourglassMaskBottom-${label.replace(/\s+/g, '-')}`;
 
   return (
-    <div className={`p-3 sm:p-4 rounded-lg shadow-lg bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 flex flex-col items-center ${textColor}`}>
+    <div className={`p-3 sm:p-4 flex flex-col items-center ${textColor}`}> {/* Removed card classes */}
       <div className="flex items-center space-x-2 mb-2">
-        {icon && <span className="w-5 h-5 sm:w-6 sm:h-6">{icon}</span>} {/* Icon color passed via props to App.tsx */}
+        {icon && <span className="w-5 h-5 sm:w-6 sm:h-6">{icon}</span>}
         <span className="text-sm sm:text-md font-semibold">{label}</span>
       </div>
 
@@ -56,29 +54,26 @@ const Hourglass: React.FC<HourglassProps> = ({
             </mask>
           </defs>
 
-          {/* Frame */}
           <path d={topBulbPath} stroke={frameColor} strokeWidth="3" fill="none" />
           <path d={bottomBulbPath} stroke={frameColor} strokeWidth="3" fill="none" />
           
-          {/* Top Sand - filled from bottom of top bulb upwards as it empties */}
           <rect
-            x={framePadding} // x aligned with bulb for mask
+            x={framePadding} 
             y={topSandY}
             width={bulbWidth} 
             height={topSandFillHeight}
             fill={sandColor}
-            className="transition-all duration-100 ease-linear"
+            className="transition-all duration-150 ease-linear"
             mask={`url(#${maskIdTop})`}
           />
 
-          {/* Bottom Sand - filled from top of bottom bulb downwards as it fills */}
           <rect
-            x={framePadding} // x aligned with bulb for mask
-            y={bottomSandY} // Starts at the neck
+            x={framePadding} 
+            y={bottomSandY} 
             width={bulbWidth} 
-            height={bottomSandFillHeight} // Height grows from 0
+            height={bottomSandFillHeight} 
             fill={sandColor}
-            className="transition-all duration-100 ease-linear"
+            className="transition-all duration-150 ease-linear"
             mask={`url(#${maskIdBottom})`}
           />
         </svg>

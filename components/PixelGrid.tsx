@@ -25,9 +25,9 @@ const PixelGrid: React.FC<PixelGridProps> = ({
   const percentageColor = mainValueColor || pixelColor;
 
   return (
-    <div className={`p-3 sm:p-4 rounded-lg shadow-lg bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200 dark:border-slate-700 flex flex-col items-center ${textColor}`}>
+    <div className={`p-3 sm:p-4 flex flex-col items-center ${textColor}`}> {/* Removed card classes */}
       <div className="flex items-center space-x-2 mb-2">
-        {icon && <span className="w-5 h-5 sm:w-6 sm:h-6">{icon}</span>} {/* Icon color passed via props to App.tsx */}
+        {icon && <span className="w-5 h-5 sm:w-6 sm:h-6">{icon}</span>}
         <span className="text-sm sm:text-md font-semibold">{label}</span>
       </div>
 
@@ -40,7 +40,7 @@ const PixelGrid: React.FC<PixelGridProps> = ({
         {pixels.map((pixel, index) => (
           <div
             key={index}
-            className="aspect-square rounded-[1px] sm:rounded-sm transition-colors duration-100"
+            className="aspect-square rounded-[1px] sm:rounded-sm transition-colors duration-150"
             style={{ backgroundColor: pixel.filled ? pixelColor : emptyPixelColor }}
           ></div>
         ))}

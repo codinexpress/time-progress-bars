@@ -121,7 +121,6 @@ export interface ColorCustomizerProps {
   customColors: CustomColors;
   onColorChange: (unitId: TimeUnitId, colorHex: string) => void; // colorHex is a hex string
   onResetColors: () => void;
-  // availableColors prop is removed as we are using input type="color"
 }
 
 export interface Comment {
@@ -136,6 +135,43 @@ export interface CommentData { // The structure stored in the bin
 }
 
 export interface CommentSectionProps {
-  apiKey: string; // API key for extendsclass.com
-  appTheme: Theme; // To help style the comment section consistently
+  apiKey: string; 
+  appTheme: Theme; 
 }
+
+// New types for Feedback System
+export type ActiveTab = 'visualizations' | 'settings' | 'colors' | 'comments' | 'feedback';
+
+export interface RatingCounts {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+}
+
+export interface FeedbackData {
+  likeCount: number;
+  hasLiked: boolean;
+  ratingCounts: RatingCounts;
+  userRating: number; // 0 if not rated, 1-5 if rated
+}
+
+export interface FeedbackSectionProps {
+  feedbackData: FeedbackData;
+  onLikeToggle: () => void;
+  onRate: (rating: number) => void;
+  isLoading: boolean;
+  error: string | null;
+  appTheme: Theme;
+}
+
+// API Key for keyvalue.immanuel.co
+export const FEEDBACK_API_APP_KEY = 'fs04vuf5';
+export const VISITOR_COUNT_KEY = 'temporalFluxVisitorCount';
+export const LIKE_COUNT_KEY = 'temporalFluxLikeCount';
+export const RATING_KEY_PREFIX = 'temporalFluxRating'; // e.g., temporalFluxRating1
+
+export const LOCAL_STORAGE_HAS_LIKED_KEY = 'temporalFlux_hasLiked';
+export const LOCAL_STORAGE_USER_RATING_KEY = 'temporalFlux_userRating';
+
